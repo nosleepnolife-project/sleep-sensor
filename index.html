@@ -2756,6 +2756,7 @@ const provider=new GoogleAuthProvider();
 
 
 const STORAGE_KEY="sleepSensorV8";
+function getStorageKey(){return currentUser?.uid?`${STORAGE_KEY}_${currentUser.uid}`:`${STORAGE_KEY}_guest`;}
 
 
 
@@ -2831,12 +2832,16 @@ let data={
   },
 
 
-  lastAnalysis:null
+  lastAnalysis:null,
+  lastResetAt:0
 
 
 };
 
-
+const DEFAULT_DATA=JSON.parse(JSON.stringify(data));
+function resetDataState(){
+  data=JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
 
 
 let currentUser=null;
@@ -3099,7 +3104,7 @@ function saveLocal(){
 
 
   localStorage.setItem(
-    STORAGE_KEY,
+    getStorageKey(),
     JSON.stringify(data)
   );
 
@@ -3116,7 +3121,7 @@ function loadLocal(){
 
 
     const raw=
-      localStorage.getItem(STORAGE_KEY);
+      localStorage.getItem(getStorageKey());
 
 
     if(!raw)return;
@@ -3124,6 +3129,8 @@ function loadLocal(){
 
     const parsed=JSON.parse(raw);
 
+    data.lastResetAt=
+      Number(parsed.lastResetAt)||0;
 
     data.xp=
       Number(parsed.xp)||0;
@@ -3696,6 +3703,40 @@ async function loadFromFirestore(){
     const remote=
       snap.data();
 
+    /*
+     * 管理者による全体リセットが行われていたら、
+     * この端末に残っている古いデータを先に消す。
+     * これにより古い履歴がFirestoreへ再保存されるのを防ぐ。
+     */
+    const remoteResetAt=
+      remote.resetDataAt?.toMillis?.()||
+      (remote.resetDataAt?.toDate?.()
+        ?remote.resetDataAt.toDate().getTime()
+        :0);
+
+    if(remoteResetAt>(Number(data.lastResetAt)||0)){
+      data.xp=0;
+      data.lastXPGain=0;
+      data.history=[];
+      data.achievements=[];
+      data.unlockedTitlePrefixes=[];
+      data.unlockedTitleSuffixes=[];
+      data.equippedTitlePrefix="";
+      data.equippedTitleSuffix="";
+      data.friends=[];
+      data.improvement={
+        baselineReady:false,
+        baselineScore:null,
+        baselineStartAt:null,
+        baselineEndAt:null,
+        currentAverage:null,
+        improvementRate:null
+      };
+      data.lastAnalysis=null;
+      data.lastResetAt=remoteResetAt;
+      saveLocal();
+    }
+
 
     if(Array.isArray(remote.history)){
 
@@ -3900,6 +3941,10 @@ onAuthStateChanged(
 
     currentUser=user;
 
+    // ローカル保存領域をアカウントごとに切り替え、別アカウントの記録を混ぜない。
+    resetDataState();
+    loadLocal();
+
 
     const status=
       document.getElementById(
@@ -3996,6 +4041,8 @@ onAuthStateChanged(
 
     }else{
       accessGrant=null;accessChecked=false;updateAccessUI();
+      resetDataState();
+      loadLocal();
 
 
       status.textContent=
