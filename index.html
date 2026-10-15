@@ -1456,6 +1456,7 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
       </div>
 
       <div class="badge">音イベント：<span id="liveSoundEvents">0</span></div>
+      <div class="badge" id="micHelpStatus">音量が変化しない場合はマイク許可を確認</div>
 
 
       <div class="badge" id="wakeStatus">
@@ -6145,9 +6146,11 @@ async function releaseWakeLock(){
 
 
 async function startMicrophone(){
+  const micEl=document.getElementById("micStatus");
+  const soundEl=document.getElementById("liveSoundEvents");
   try{
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-      throw new Error("このブラウザではマイク入力を利用できません。HTTPSで開いているか確認してください。");
+      throw new Error("マイク入力が利用できません。HTTPSで開いているか確認してください。");
     }
 
     micStream=await navigator.mediaDevices.getUserMedia({
@@ -6159,13 +6162,15 @@ async function startMicrophone(){
     });
 
     const AudioContextClass=window.AudioContext||window.webkitAudioContext;
-    if(!AudioContextClass) throw new Error("AudioContextに対応していません。");
+    if(!AudioContextClass) throw new Error("このブラウザは音声解析に対応していません。");
+
     audioContext=new AudioContextClass();
     if(audioContext.state==="suspended") await audioContext.resume();
+    if(audioContext.state!=="running") throw new Error("音声処理を開始できませんでした。");
 
     const source=audioContext.createMediaStreamSource(micStream);
     analyser=audioContext.createAnalyser();
-    analyser.fftSize=1024;
+    analyser.fftSize=2048;
     analyser.smoothingTimeConstant=0;
     source.connect(analyser);
 
@@ -6173,39 +6178,50 @@ async function startMicrophone(){
     soundAboveThreshold=false;
     soundAboveSamples=0;
     soundQuietSamples=0;
+    if(soundEl) soundEl.textContent=String(soundEvents);
 
+    // RMS（波形の実効値）を使い、音量を画面に出しながらイベントを検出する。
+    // 環境差で拾えないことを減らすため、固定しきい値は控えめに設定。
+    const threshold=0.008;
     audioTimer=setInterval(()=>{
-      if(!measuring || !analyser) return;
+      if(!measuring || !analyser || !audioContext || audioContext.state!=="running") return;
+
       analyser.getFloatTimeDomainData(buffer);
       let sumSquares=0;
-      for(let i=0;i<buffer.length;i++) sumSquares+=buffer[i]*buffer[i];
+      for(let i=0;i<buffer.length;i++){
+        const sample=Number.isFinite(buffer[i])?buffer[i]:0;
+        sumSquares+=sample*sample;
+      }
       const rms=Math.sqrt(sumSquares/buffer.length);
-      // 一瞬のノイズでは数えず、音が続いたときに1イベントとして数える。
-      const threshold=0.025;
+      const volumeLevel=Math.min(100,Math.round(rms*1000));
+      if(micEl && !soundAboveThreshold){
+        micEl.textContent=`マイク：入力中（音量レベル ${volumeLevel}）`;
+      }
+
       if(rms>=threshold){
         soundAboveSamples++;
         soundQuietSamples=0;
+        // 100ms程度連続してしきい値を超えたら1イベントとして数える。
         if(!soundAboveThreshold && soundAboveSamples>=2){
           soundEvents++;
           soundAboveThreshold=true;
-          const soundEl=document.getElementById("liveSoundEvents");
           if(soundEl) soundEl.textContent=String(soundEvents);
-          const micEl=document.getElementById("micStatus");
-          if(micEl) micEl.textContent="マイク：音を検出";
+          if(micEl) micEl.textContent=`マイク：音を検出（音量レベル ${volumeLevel}）`;
         }
       }else{
         soundAboveSamples=0;
         soundQuietSamples++;
-        // 約1秒静かになったら次の音を数えられるようにする。
-        if(soundQuietSamples>=4) soundAboveThreshold=false;
+        // 約0.5秒静かになったら次のイベントを数えられるようにする。
+        if(soundQuietSamples>=10){
+          soundAboveThreshold=false;
+          if(micEl) micEl.textContent=`マイク：入力中（音量レベル ${volumeLevel}）`;
+        }
       }
-    },250);
+    },50);
 
-    const micEl=document.getElementById("micStatus");
     if(micEl) micEl.textContent="マイク：入力中（音待ち）";
   }catch(e){
     console.warn("Microphone unavailable:",e);
-    const micEl=document.getElementById("micStatus");
     if(micEl) micEl.textContent="マイク：利用不可（権限・HTTPSを確認）";
   }
 }
@@ -10770,4 +10786,4 @@ showPage(
 
 
 </body>
-</html>        
+</html>
