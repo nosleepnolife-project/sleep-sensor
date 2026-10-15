@@ -35,6 +35,13 @@ label{display:block;color:#ccc;font-size:13px;margin:10px 0 5px}.row{display:fle
 <section class="card"><h2>利用期限管理</h2><p class="notice">利用期限はFirestoreの accessGrants コレクションに保存します。新規ユーザーの初回7日間付与は利用者ページ側で行います。管理者はここから期限の延長や無期限設定ができます。</p>
 <div class="row"><input id="accessSearch" placeholder="UID・ニックネーム・フレンドIDで検索"><button id="accessSearchBtn" class="btn">検索</button><button id="accessReloadBtn" class="btn secondary">一覧更新</button></div>
 <div class="row" style="margin-top:12px"><button id="grantExistingBtn" class="btn secondary">期限未設定の既存ユーザーに7日間付与</button></div><p class="muted">一括付与は、まだ利用期限が登録されていないユーザーだけが対象です。すでに設定された期限は変更しません。</p><div id="accessSummary" class="muted">読み込み中...</div><div id="accessList"></div></section>
+<section class="card">
+<h2>利用データの一括リセット</h2>
+<p class="notice">全利用者の測定履歴、改善データ、経験値、実績、獲得済み二つ名、ランキング、友達関係・申請をリセットします。Googleログイン、ユーザーアカウント、ニックネーム・プロフィール、利用期限、お知らせ、管理者設定、二つ名のマスター一覧は削除しません。</p>
+<p class="muted">この操作は取り消せません。各利用者ページにもリセット時刻を記録し、次回ログイン時に端末内の古い利用データが復活しないようにします。</p>
+<button id="resetAppDataBtn" class="btn danger">全部の利用データをリセット</button>
+<div id="resetAppDataStatus" class="muted" style="margin-top:10px"></div>
+</section>
 <section class="card"><h2>二つ名管理</h2><p class="muted">前半と後半を別々に登録できます。利用者は獲得済みの前半・後半を自由に組み合わせられます。</p><input type="hidden" id="titleEditId"><div class="grid"><div><label>種類</label><select id="titleType"><option value="front">前半</option><option value="back">後半</option></select></div><div><label>二つ名</label><input id="titleName" placeholder="例：不屈の"></div><div><label>レア度</label><select id="titleRarity"><option value="normal">通常</option><option value="rare">レア</option><option value="epic">エピック</option><option value="legendary">伝説</option></select></div><div><label>解放条件の実績ID</label><input id="unlockAchievementId" placeholder="例：streak_7"></div></div><label>公開状態</label><div class="check"><input type="checkbox" id="titleActive" checked><span>利用者側で使用可能</span></div><div class="row"><button id="saveTitleBtn" class="btn">二つ名を保存</button><button id="cancelTitleBtn" class="btn secondary hidden">編集をキャンセル</button></div><h3>登録済み二つ名</h3><div id="titleList"></div></section>
 <section class="card"><h2>お知らせ管理</h2><input type="hidden" id="announcementEditId"><label>タイトル</label><input id="announcementTitle" placeholder="お知らせタイトル"><label>内容</label><textarea id="announcementMessage" placeholder="お知らせ内容"></textarea><div class="row"><div class="check"><input type="checkbox" id="announcementImportant"><span>重要</span></div><div class="check"><input type="checkbox" id="announcementPinned"><span>固定</span></div><div class="check"><input type="checkbox" id="announcementActive" checked><span>公開</span></div></div><div class="row"><button id="saveAnnouncementBtn" class="btn">お知らせを保存</button><button id="cancelAnnouncementBtn" class="btn secondary hidden">編集をキャンセル</button></div><h3>登録済みお知らせ</h3><div id="announcementList"></div></section>
 <section class="card"><h2>ユーザー検索</h2><div class="row"><input id="userSearch" placeholder="メールアドレス、UID、フレンドID、表示名"><button id="searchUserBtn" class="btn">検索</button></div><div id="userResults"></div></section>
@@ -43,7 +50,7 @@ label{display:block;color:#ccc;font-size:13px;margin:10px 0 5px}.row{display:fle
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-import {getFirestore,collection,getDocs,getDoc,doc,setDoc,addDoc,updateDoc,deleteDoc,query,where,serverTimestamp,Timestamp} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import {getFirestore,collection,getDocs,getDoc,doc,setDoc,addDoc,updateDoc,deleteDoc,query,where,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyBhfOVk4K5Ybjji16b1ZKRqXd1UJGypH9Y",authDomain:"sleep-sensor-af01f.firebaseapp.com",projectId:"sleep-sensor-af01f",storageBucket:"sleep-sensor-af01f.firebasestorage.app",messagingSenderId:"86707291255",appId:"1:86707291255:web:01e2e67fa63c3513503272"};
 const ADMIN_EMAIL="kawamata.sousuke@ryugasaki1-h.ibk.ed.jp";const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);const provider=new GoogleAuthProvider();const $=id=>document.getElementById(id);
 let cachedUsers=[],cachedGrants=new Map(),cachedProfiles=new Map(),cachedRankingUsers=new Map();
@@ -69,6 +76,51 @@ function renderAccessUsers(){const term=$("accessSearch").value.trim().toLowerCa
 async function setAccess(uid,mode,customDate=null){if(!isAdmin(auth.currentUser))return;const u=cachedUsers.find(x=>x.uid===uid);if(!u)return;let expiresAt=null,unlimited=false;if(mode==="unlimited")unlimited=true;else if(mode==="custom")expiresAt=customDate;else{const days=Number(mode);if(![1,7,30].includes(days))return;expiresAt=new Date(Date.now()+days*86400000)}const description=unlimited?"無期限":dateText(expiresAt);if(!confirm(`${userName(uid,u)} の利用期限を ${description} に設定しますか？`))return;try{const ref=doc(db,"accessGrants",uid),existing=await getDoc(ref);const payload={uid,unlimited,expiresAt:unlimited?null:Timestamp.fromDate(expiresAt),updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid};if(!existing.exists()){payload.createdAt=serverTimestamp();payload.createdBy=auth.currentUser.uid}await setDoc(ref,payload,{merge:true});msg("利用期限を変更しました。","success");await Promise.all([loadAccessUsers(),loadDashboard()])}catch(e){msg("利用期限の変更に失敗しました："+e.message,"error")}}
 $("accessSearchBtn").onclick=renderAccessUsers;$("accessSearch").addEventListener("keydown",e=>{if(e.key==="Enter")renderAccessUsers()});$("accessReloadBtn").onclick=loadAccessUsers;
 $("grantExistingBtn").onclick=async()=>{if(!isAdmin(auth.currentUser))return;const targets=cachedUsers.filter(u=>!cachedGrants.has(u.uid));if(!targets.length){msg("期限未設定のユーザーはいません。","success");return}if(!confirm(`${targets.length}人に、現在から7日間の利用期限を付与します。よろしいですか？`))return;const btn=$("grantExistingBtn");btn.disabled=true;let success=0,failed=0;try{for(const u of targets){try{const ref=doc(db,"accessGrants",u.uid),latest=await getDoc(ref);if(latest.exists())continue;await setDoc(ref,{uid:u.uid,unlimited:false,expiresAt:Timestamp.fromDate(new Date(Date.now()+7*86400000)),createdAt:serverTimestamp(),updatedAt:serverTimestamp(),createdBy:auth.currentUser.uid,updatedBy:auth.currentUser.uid});success++}catch(e){console.error(e);failed++}}await Promise.all([loadAccessUsers(),loadDashboard()]);msg(`${success}人に7日間の期限を付与しました。失敗: ${failed}人`,failed?"error":"success")}finally{btn.disabled=false}};
+/* 全利用者の利用データ一括リセット（ログイン・プロフィール・利用期限・管理設定は保持） */
+$("resetAppDataBtn").onclick=async()=>{
+ if(!isAdmin(auth.currentUser))return;
+ const typed=prompt("全利用者の利用データをリセットします。\n続行するには RESET と入力してください。");
+ if(typed!=="RESET"){if(typed!==null)msg("入力が一致しないため、リセットを中止しました。","error");return}
+ if(!confirm("最終確認：測定履歴・実績・ランキング・友達関係などを全利用者分リセットします。この操作は元に戻せません。実行しますか？"))return;
+ const btn=$("resetAppDataBtn"),status=$("resetAppDataStatus");
+ btn.disabled=true;status.textContent="データを確認しています...";
+ try{
+  const [usersSnap,rankingSnap,requestsSnap]=await Promise.all([
+   getDocs(collection(db,"users")),getDocs(collection(db,"ranking")),getDocs(collection(db,"friendRequests"))
+  ]);
+  const actions=[];
+  for(const u of usersSnap.docs){
+   actions.push({type:"set",ref:doc(db,"users",u.id),data:{
+    xp:0,lastXPGain:0,history:[],achievements:[],
+    unlockedTitlePrefixes:[],unlockedTitleSuffixes:[],
+    equippedTitlePrefix:"",equippedTitleSuffix:"",
+    improvement:{baselineReady:false,baselineScore:null,baselineStartAt:null,baselineEndAt:null,currentAverage:null,improvementRate:null},
+    lastAnalysis:null,resetDataAt:serverTimestamp(),updatedAt:serverTimestamp()
+   }});
+   for(const sub of ["measurements","friends"]){
+    const subSnap=await getDocs(collection(db,"users",u.id,sub));
+    for(const d of subSnap.docs)actions.push({type:"delete",ref:d.ref});
+   }
+  }
+  for(const d of rankingSnap.docs)actions.push({type:"delete",ref:d.ref});
+  for(const d of requestsSnap.docs)actions.push({type:"delete",ref:d.ref});
+  let batch=writeBatch(db),count=0,done=0;
+  for(const action of actions){
+   if(action.type==="set")batch.set(action.ref,action.data,{merge:true});else batch.delete(action.ref);
+   count++;done++;
+   if(count>=400){await batch.commit();batch=writeBatch(db);count=0;status.textContent=`処理中... ${done} / ${actions.length}`;}
+  }
+  if(count)await batch.commit();
+  status.textContent=`完了：利用者 ${usersSnap.size} 人、ランキング ${rankingSnap.size} 件、友達申請 ${requestsSnap.size} 件を処理しました。`;
+  msg("全利用者の利用データをリセットしました。アカウント・プロフィール・利用期限・管理設定は保持しています。","success");
+  await loadAll();
+ }catch(e){
+  console.error("一括リセット失敗",e);
+  status.textContent="リセットに失敗しました。Firestoreのルール・権限を確認してください。";
+  msg("利用データのリセットに失敗しました："+e.message,"error");
+ }finally{btn.disabled=false}
+};
+
 /* 二つ名管理 */
 async function loadTitles(){try{const snap=await getDocs(collection(db,"titleParts"));const arr=snap.docs.map(d=>({id:d.id,...d.data()}));arr.sort((a,b)=>(a.type||"").localeCompare(b.type||"")||(a.name||"").localeCompare(b.name||""));$("titleList").innerHTML=arr.length?arr.map(t=>{const type=t.type==="back"?"後半":"前半",active=t.active!==false;return `<div class="item"><strong>${esc(t.name||"名称未設定")}</strong><span class="badge">${type}</span><span class="badge">${esc(rarityName(t.rarity))}</span>${active?'<span class="badge">公開</span>':'<span class="badge">非公開</span>'}${t.unlockAchievementId?`<span class="badge">実績: ${esc(t.unlockAchievementId)}</span>`:""}<div class="row" style="margin-top:9px"><button class="btn small" data-edit-title="${t.id}">編集</button><button class="btn secondary small" data-toggle-title="${t.id}" data-active="${active}">${active?"非公開にする":"公開する"}</button><button class="btn danger small" data-delete-title="${t.id}">削除</button></div></div>`}).join(""):"<div class='muted'>二つ名はまだ登録されていません。</div>";document.querySelectorAll("[data-edit-title]").forEach(b=>b.onclick=()=>editTitle(b.dataset.editTitle));document.querySelectorAll("[data-toggle-title]").forEach(b=>b.onclick=()=>toggleTitle(b.dataset.toggleTitle,b.dataset.active!=="true"));document.querySelectorAll("[data-delete-title]").forEach(b=>b.onclick=()=>deleteTitle(b.dataset.deleteTitle))}catch(e){msg("二つ名の取得に失敗しました："+e.message,"error")}}
 function rarityName(r){return({normal:"通常",rare:"レア",epic:"エピック",legendary:"伝説"})[r]||"通常"}
