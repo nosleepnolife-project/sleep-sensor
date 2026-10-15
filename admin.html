@@ -1,36 +1,72 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#111">
-<title>No Sleep No Life 管理者ページ</title>
+<title>No Sleep No Life 管理者ページ v30</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#111;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-button,input,textarea,select{font:inherit} button{cursor:pointer}
-header{position:sticky;top:0;z-index:10;background:#181818;border-bottom:1px solid #333;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
-header h1{font-size:18px;margin:0}.container{max-width:1100px;margin:auto;padding:18px}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+header{position:sticky;top:0;z-index:10;background:#181818;border-bottom:1px solid #333;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+header h1{font-size:18px;margin:0}
+.container{max-width:1100px;margin:auto;padding:18px}
 .card{background:#1b1b1b;border:1px solid #333;border-radius:14px;padding:18px;margin-bottom:16px}
-h2{font-size:18px;margin:0 0 14px} h3{font-size:15px;margin:16px 0 8px}
+h2{font-size:18px;margin:0 0 14px}
+h3{font-size:15px;margin:16px 0 8px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
-.stat{background:#111;border:1px solid #333;border-radius:12px;padding:15px}.stat .label{color:#aaa;font-size:12px}.stat .value{font-size:25px;font-weight:700;margin-top:5px}
+.stat{background:#111;border:1px solid #333;border-radius:12px;padding:15px}
+.stat .label{color:#aaa;font-size:12px}
+.stat .value{font-size:25px;font-weight:700;margin-top:5px}
 input,textarea,select{width:100%;background:#111;color:#fff;border:1px solid #444;border-radius:9px;padding:10px}
-textarea{min-height:100px;resize:vertical} label{display:block;color:#ccc;font-size:13px;margin:10px 0 5px}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.btn{border:0;border-radius:9px;padding:10px 14px;background:#fff;color:#111;font-weight:700}
-.btn.secondary{background:#333;color:#fff}.btn.danger{background:#8d2222;color:#fff}.btn.small{padding:7px 10px;font-size:12px}
-.notice{padding:10px 12px;border-radius:9px;background:#222;border:1px solid #444;margin-bottom:12px}.error{background:#351818;border-color:#7b2b2b;color:#ffb4b4}
-.success{background:#18351f;border-color:#2d7040;color:#b9f2c6}.badge{display:inline-block;padding:3px 7px;border-radius:99px;background:#333;color:#ddd;font-size:11px;margin-right:4px}
-.badge.important{color:#ff7777;border:1px solid #8d3333}.badge.pinned{color:#ffd76a;border:1px solid #806522}
-.item{background:#111;border:1px solid #333;border-radius:11px;padding:13px;margin:8px 0}.item strong{display:block;margin-bottom:5px}
-.muted{color:#999;font-size:12px}.hidden{display:none!important}#login{max-width:520px;margin:80px auto;padding:20px}
-.check{display:flex;gap:8px;align-items:center;margin:10px 0}.check input{width:auto}
+textarea{min-height:100px;resize:vertical}
+label{display:block;color:#ccc;font-size:13px;margin:10px 0 5px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>input{flex:1;min-width:180px}
+.btn{border:0;border-radius:9px;padding:10px 14px;background:#fff;color:#111;font-weight:700}
+.btn.secondary{background:#333;color:#fff}
+.btn.danger{background:#8d2222;color:#fff}
+.btn.small{padding:7px 10px;font-size:12px}
+.notice{padding:10px 12px;border-radius:9px;background:#222;border:1px solid #444;margin-bottom:12px;line-height:1.6}
+.error{background:#351818;border-color:#7b2b2b;color:#ffb4b4}
+.success{background:#18351f;border-color:#2d7040;color:#b9f2c6}
+.badge{display:inline-block;padding:3px 7px;border-radius:99px;background:#333;color:#ddd;font-size:11px;margin-right:4px}
+.badge.important{color:#ff7777;border:1px solid #8d3333}
+.badge.pinned{color:#ffd76a;border:1px solid #806522}
+.badge.expired{color:#ff9999;border:1px solid #8d3333}
+.badge.active{color:#aaffaa;border:1px solid #35733d}
+.item{background:#111;border:1px solid #333;border-radius:11px;padding:13px;margin:8px 0}
+.item strong{display:block;margin-bottom:5px}
+.muted{color:#999;font-size:12px}
+.hidden{display:none!important}
+#login{max-width:520px;margin:80px auto;padding:20px}
+.check{display:flex;gap:8px;align-items:center;margin:10px 0}
+.check input{width:auto}
+.access-box{margin-top:12px;padding:12px;background:#191919;border:1px solid #383838;border-radius:10px}
+.access-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.access-actions button{margin:0}
+.access-date{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-top:9px}
+.access-date input{max-width:240px}
+.access-date button{flex-shrink:0}
+#accessList{max-height:620px;overflow-y:auto}
+@media(max-width:600px){
+header h1{font-size:14px}
+.container{padding:10px}
+.card{padding:14px}
+}
 </style>
 </head>
 <body>
 <header>
-<h1>No Sleep No Life 管理者ページ</h1>
-<div class="row"><span id="adminEmail" class="muted"></span><button id="logoutBtn" class="btn secondary small hidden">ログアウト</button></div>
+<h1>No Sleep No Life 管理者ページ v30</h1>
+<div class="row">
+<span id="adminEmail" class="muted"></span>
+<button id="logoutBtn" class="btn secondary small hidden">ログアウト</button>
+</div>
 </header>
 
 <section id="login" class="card">
@@ -54,8 +90,42 @@ textarea{min-height:100px;resize:vertical} label{display:block;color:#ccc;font-s
 <div class="stat"><div class="label">ランキング登録</div><div id="rankingCount" class="value">-</div></div>
 <div class="stat"><div class="label">保留中の友達申請</div><div id="pendingCount" class="value">-</div></div>
 <div class="stat"><div class="label">公開お知らせ</div><div id="announcementCount" class="value">-</div></div>
+<div class="stat"><div class="label">有効な利用者</div><div id="activeAccessCount" class="value">-</div></div>
+<div class="stat"><div class="label">期限切れ</div><div id="expiredAccessCount" class="value">-</div></div>
+<div class="stat"><div class="label">期限未設定</div><div id="unassignedAccessCount" class="value">-</div></div>
 </div>
-<div class="row" style="margin-top:12px"><button id="reloadDashboard" class="btn secondary">再読み込み</button></div>
+<div class="row" style="margin-top:12px">
+<button id="reloadDashboard" class="btn secondary">再読み込み</button>
+</div>
+</section>
+
+<section class="card">
+<h2>利用期限管理</h2>
+<p class="notice">
+利用期限はFirestoreの accessGrants コレクションに保存します。
+新規ユーザーの初回7日間付与は、利用者ページ側で行います。
+管理者はここから期限の延長や無期限設定ができます。
+</p>
+
+<div class="row">
+<input id="accessSearch" placeholder="UID・ニックネーム・フレンドIDで検索">
+<button id="accessSearchBtn" class="btn">検索</button>
+<button id="accessReloadBtn" class="btn secondary">一覧更新</button>
+</div>
+
+<div class="row" style="margin-top:12px">
+<button id="grantExistingBtn" class="btn secondary">
+期限未設定の既存ユーザーに7日間付与
+</button>
+</div>
+
+<p class="muted">
+一括付与は、まだ利用期限が登録されていないユーザーだけが対象です。
+すでに設定された期限は変更しません。
+</p>
+
+<div id="accessSummary" class="muted">読み込み中...</div>
+<div id="accessList"></div>
 </section>
 
 <section class="card">
@@ -68,41 +138,71 @@ textarea{min-height:100px;resize:vertical} label{display:block;color:#ccc;font-s
 <div><label>レア度</label><select id="titleRarity"><option value="normal">通常</option><option value="rare">レア</option><option value="epic">エピック</option><option value="legendary">伝説</option></select></div>
 <div><label>解放条件の実績ID</label><input id="unlockAchievementId" placeholder="例：streak_7"></div>
 </div>
-<label>公開状態</label><div class="check"><input type="checkbox" id="titleActive" checked><span>利用者側で使用可能</span></div>
-<div class="row"><button id="saveTitleBtn" class="btn">二つ名を保存</button><button id="cancelTitleBtn" class="btn secondary hidden">編集をキャンセル</button></div>
-<h3>登録済み二つ名</h3><div id="titleList"></div>
+<label>公開状態</label>
+<div class="check"><input type="checkbox" id="titleActive" checked><span>利用者側で使用可能</span></div>
+<div class="row">
+<button id="saveTitleBtn" class="btn">二つ名を保存</button>
+<button id="cancelTitleBtn" class="btn secondary hidden">編集をキャンセル</button>
+</div>
+<h3>登録済み二つ名</h3>
+<div id="titleList"></div>
 </section>
 
 <section class="card">
-<h2>お知らせ管理</h2><input type="hidden" id="announcementEditId">
+<h2>お知らせ管理</h2>
+<input type="hidden" id="announcementEditId">
 <label>タイトル</label><input id="announcementTitle" placeholder="お知らせタイトル">
 <label>内容</label><textarea id="announcementMessage" placeholder="お知らせ内容"></textarea>
-<div class="row"><div class="check"><input type="checkbox" id="announcementImportant"><span>重要</span></div><div class="check"><input type="checkbox" id="announcementPinned"><span>固定</span></div><div class="check"><input type="checkbox" id="announcementActive" checked><span>公開</span></div></div>
-<div class="row"><button id="saveAnnouncementBtn" class="btn">お知らせを保存</button><button id="cancelAnnouncementBtn" class="btn secondary hidden">編集をキャンセル</button></div>
-<h3>登録済みお知らせ</h3><div id="announcementList"></div>
+<div class="row">
+<div class="check"><input type="checkbox" id="announcementImportant"><span>重要</span></div>
+<div class="check"><input type="checkbox" id="announcementPinned"><span>固定</span></div>
+<div class="check"><input type="checkbox" id="announcementActive" checked><span>公開</span></div>
+</div>
+<div class="row">
+<button id="saveAnnouncementBtn" class="btn">お知らせを保存</button>
+<button id="cancelAnnouncementBtn" class="btn secondary hidden">編集をキャンセル</button>
+</div>
+<h3>登録済みお知らせ</h3>
+<div id="announcementList"></div>
 </section>
 
 <section class="card">
-<h2>ユーザー検索</h2><div class="row"><input id="userSearch" placeholder="メールアドレス、UID、フレンドID、表示名"><button id="searchUserBtn" class="btn">検索</button></div>
+<h2>ユーザー検索</h2>
+<div class="row">
+<input id="userSearch" placeholder="メールアドレス、UID、フレンドID、表示名">
+<button id="searchUserBtn" class="btn">検索</button>
+</div>
 <div id="userResults"></div>
 </section>
 
-<section class="card"><h2>ランキング</h2><div id="rankingList"></div></section>
-<section class="card"><h2>友達申請監視</h2><div id="friendRequestList"></div></section>
+<section class="card">
+<h2>ランキング</h2>
+<div id="rankingList"></div>
+</section>
+
+<section class="card">
+<h2>友達申請監視</h2>
+<div id="friendRequestList"></div>
+</section>
 </main>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-import {getFirestore,collection,getDocs,getDoc,doc,setDoc,addDoc,updateDoc,deleteDoc,query,where} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import {
+getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import {
+getFirestore,collection,getDocs,getDoc,doc,setDoc,addDoc,
+updateDoc,deleteDoc,query,where,serverTimestamp,Timestamp
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyBhfOVk4K5Ybjji16b1ZKRqXd1UJGypH9Y",
-  authDomain:"sleep-sensor-af01f.firebaseapp.com",
-  projectId:"sleep-sensor-af01f",
-  storageBucket:"sleep-sensor-af01f.firebasestorage.app",
-  messagingSenderId:"86707291255",
-  appId:"1:86707291255:web:01e2e67fa63c3513503272"
+apiKey:"AIzaSyBhfOVk4K5Ybjji16b1ZKRqXd1UJGypH9Y",
+authDomain:"sleep-sensor-af01f.firebaseapp.com",
+projectId:"sleep-sensor-af01f",
+storageBucket:"sleep-sensor-af01f.firebasestorage.app",
+messagingSenderId:"86707291255",
+appId:"1:86707291255:web:01e2e67fa63c3513503272"
 };
 
 const ADMIN_EMAIL="kawamata.sousuke@ryugasaki1-h.ibk.ed.jp";
@@ -110,208 +210,567 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 const provider=new GoogleAuthProvider();
-
 const $=id=>document.getElementById(id);
-function isAdmin(user){return !!user&&(user.email||"").toLowerCase()===ADMIN_EMAIL.toLowerCase()}
-function showLoginMessage(text,type=""){const e=$("loginMsg");e.textContent=text;e.className="notice"+(type?" "+type:"");e.classList.remove("hidden")}
-function msg(text,type=""){const e=$("message");e.textContent=text;e.className="notice"+(type?" "+type:"");e.classList.remove("hidden")}
+
+let cachedUsers=[];
+let cachedGrants=new Map();
+let cachedProfiles=new Map();
+
+function isAdmin(user){
+return !!user&&(user.email||"").toLowerCase()===ADMIN_EMAIL.toLowerCase();
+}
+function showLoginMessage(text,type=""){
+const e=$("loginMsg");
+e.textContent=text;
+e.className="notice"+(type?" "+type:"");
+e.classList.remove("hidden");
+}
+function msg(text,type=""){
+const e=$("message");
+e.textContent=text;
+e.className="notice"+(type?" "+type:"");
+e.classList.remove("hidden");
+window.scrollTo({top:0,behavior:"smooth"});
+}
 function clearMsg(){$("message").classList.add("hidden")}
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function esc(s){
+return String(s??"").replace(/[&<>"']/g,m=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[m]));
+}
+function toDate(value){
+if(!value)return null;
+if(typeof value.toDate==="function")return value.toDate();
+if(value instanceof Date)return value;
+const d=new Date(value);
+return Number.isNaN(d.getTime())?null:d;
+}
+function dateText(value){
+const d=toDate(value);
+return d?d.toLocaleString("ja-JP"):"-";
+}
+function accessStatus(grant){
+if(!grant)return {label:"未設定",cls:""};
+if(grant.unlimited===true)return {label:"無期限",cls:"active"};
+const expires=toDate(grant.expiresAt);
+if(!expires)return {label:"設定不備",cls:"expired"};
+if(expires.getTime()<=Date.now())return {label:"期限切れ",cls:"expired"};
+const days=Math.ceil((expires.getTime()-Date.now())/86400000);
+return {label:`有効・残り${days}日`,cls:"active"};
+}
+function userName(uid,user={}){
+const pub=cachedProfiles.get(uid)||{};
+return user.rankingName||pub.rankingName||"ユーザー";
+}
 
 $("loginBtn").addEventListener("click",async()=>{
-  const btn=$("loginBtn");
-  btn.disabled=true;
-  showLoginMessage("Googleログイン中...");
-  try{
-    const result=await signInWithPopup(auth,provider);
-    if(!isAdmin(result.user)){
-      await signOut(auth);
-      showLoginMessage("このGoogleアカウントには管理者権限がありません。","error");
-      return;
-    }
-    showLoginMessage("ログインしました。","success");
-  }catch(e){
-    console.error("管理者ログインエラー:",e);
-    showLoginMessage("ログインに失敗しました："+(e.code||"unknown")+" / "+(e.message||e),"error");
-  }finally{
-    btn.disabled=false;
-  }
+const btn=$("loginBtn");
+btn.disabled=true;
+showLoginMessage("Googleログイン中...");
+try{
+const result=await signInWithPopup(auth,provider);
+if(!isAdmin(result.user)){
+await signOut(auth);
+showLoginMessage("このGoogleアカウントには管理者権限がありません。","error");
+return;
+}
+showLoginMessage("ログインしました。","success");
+}catch(e){
+console.error("管理者ログインエラー:",e);
+showLoginMessage("ログインに失敗しました："+(e.code||"unknown")+" / "+(e.message||e),"error");
+}finally{btn.disabled=false}
 });
 
 $("logoutBtn").addEventListener("click",()=>signOut(auth));
 
 onAuthStateChanged(auth,async user=>{
-  if(!user){
-    $("login").classList.remove("hidden");
-    $("app").classList.add("hidden");
-    $("logoutBtn").classList.add("hidden");
-    $("adminEmail").textContent="";
-    return;
-  }
-  if(!isAdmin(user)){
-    await signOut(auth);
-    return;
-  }
-  $("login").classList.add("hidden");
-  $("app").classList.remove("hidden");
-  $("logoutBtn").classList.remove("hidden");
-  $("adminEmail").textContent=user.email||"";
-  await loadAll();
+if(!user){
+$("login").classList.remove("hidden");
+$("app").classList.add("hidden");
+$("logoutBtn").classList.add("hidden");
+$("adminEmail").textContent="";
+return;
+}
+if(!isAdmin(user)){await signOut(auth);return}
+$("login").classList.add("hidden");
+$("app").classList.remove("hidden");
+$("logoutBtn").classList.remove("hidden");
+$("adminEmail").textContent=user.email||"";
+await loadAll();
 });
 
 async function loadAll(){
-  clearMsg();
-  await Promise.allSettled([loadDashboard(),loadTitles(),loadAnnouncements(),loadRanking(),loadFriendRequests()]);
+clearMsg();
+await Promise.allSettled([
+loadDashboard(),loadTitles(),loadAnnouncements(),
+loadRanking(),loadFriendRequests(),loadAccessUsers()
+]);
 }
 $("reloadDashboard").onclick=loadAll;
 
 async function loadDashboard(){
- try{
-  const usersSnap=await getDocs(collection(db,"users"));
-  let total=0,today=0,scores=[],imps=[];
-  const start=new Date();start.setHours(0,0,0,0);
-  for(const u of usersSnap.docs){
-    const ms=await getDocs(collection(db,"users",u.id,"measurements"));
-    total+=ms.size;
-    ms.forEach(m=>{
-      const d=m.data(),t=d.createdAt?.toDate?.()||d.timestamp?.toDate?.()||null;
-      if(t&&t>=start)today++;
-      if(typeof d.score==="number")scores.push(d.score);
-      if(typeof d.improvementRate==="number")imps.push(d.improvementRate);
-    });
-  }
-  $("userCount").textContent=usersSnap.size;
-  $("measurementCount").textContent=total;
-  $("todayCount").textContent=today;
-  $("avgScore").textContent=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):"-";
-  $("avgImprovement").textContent=imps.length?((imps.reduce((a,b)=>a+b,0)/imps.length).toFixed(1)+"%"):"-";
-  const [r,f,a]=await Promise.all([
-    getDocs(collection(db,"ranking")),
-    getDocs(query(collection(db,"friendRequests"),where("status","==","pending"))),
-    getDocs(collection(db,"announcements"))
-  ]);
-  $("rankingCount").textContent=r.size;
-  $("pendingCount").textContent=f.size;
-  $("announcementCount").textContent=a.docs.filter(x=>x.data().active!==false).length;
- }catch(e){msg("ダッシュボードの一部取得に失敗しました："+e.message,"error")}
+try{
+const usersSnap=await getDocs(collection(db,"users"));
+let total=0,today=0,scores=[],imps=[];
+const start=new Date();start.setHours(0,0,0,0);
+for(const u of usersSnap.docs){
+const ms=await getDocs(collection(db,"users",u.id,"measurements"));
+total+=ms.size;
+ms.forEach(m=>{
+const d=m.data();
+const t=toDate(d.createdAt)||toDate(d.timestamp);
+if(t&&t>=start)today++;
+if(typeof d.score==="number")scores.push(d.score);
+if(typeof d.improvementRate==="number")imps.push(d.improvementRate);
+});
 }
+$("userCount").textContent=usersSnap.size;
+$("measurementCount").textContent=total;
+$("todayCount").textContent=today;
+$("avgScore").textContent=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):"-";
+$("avgImprovement").textContent=imps.length?((imps.reduce((a,b)=>a+b,0)/imps.length).toFixed(1)+"%"):"-";
+
+const [r,f,a,g]=await Promise.all([
+getDocs(collection(db,"ranking")),
+getDocs(query(collection(db,"friendRequests"),where("status","==","pending"))),
+getDocs(collection(db,"announcements")),
+getDocs(collection(db,"accessGrants"))
+]);
+
+$("rankingCount").textContent=r.size;
+$("pendingCount").textContent=f.size;
+$("announcementCount").textContent=a.docs.filter(x=>x.data().active!==false).length;
+
+const grants=new Map(g.docs.map(x=>[x.id,x.data()]));
+let active=0,expired=0,unassigned=0;
+for(const u of usersSnap.docs){
+const grant=grants.get(u.id);
+if(!grant){unassigned++;continue}
+const status=accessStatus(grant);
+if(status.cls==="active")active++;
+else expired++;
+}
+$("activeAccessCount").textContent=active;
+$("expiredAccessCount").textContent=expired;
+$("unassignedAccessCount").textContent=unassigned;
+}catch(e){msg("ダッシュボードの一部取得に失敗しました："+e.message,"error")}
+}
+
+/* 利用期限管理 */
+
+async function loadAccessUsers(){
+try{
+$("accessSummary").textContent="読み込み中...";
+const [users,grants,profiles]=await Promise.all([
+getDocs(collection(db,"users")),
+getDocs(collection(db,"accessGrants")),
+getDocs(collection(db,"publicProfiles"))
+]);
+cachedUsers=users.docs.map(d=>({uid:d.id,...d.data()}));
+cachedGrants=new Map(grants.docs.map(d=>[d.id,d.data()]));
+cachedProfiles=new Map(profiles.docs.map(d=>[d.id,d.data()]));
+renderAccessUsers();
+}catch(e){
+$("accessSummary").textContent="読み込みに失敗しました。";
+msg("利用期限一覧を取得できませんでした："+e.message,"error");
+}
+}
+
+function renderAccessUsers(){
+const term=$("accessSearch").value.trim().toLowerCase();
+const rows=cachedUsers.filter(u=>{
+const pub=cachedProfiles.get(u.uid)||{};
+return [u.uid,u.rankingName,u.friendId,u.email,pub.rankingName,pub.friendId]
+.join(" ").toLowerCase().includes(term);
+});
+$("accessSummary").textContent=`表示 ${rows.length}人 / 全${cachedUsers.length}人`;
+$("accessList").innerHTML=rows.length?rows.map(u=>{
+const grant=cachedGrants.get(u.uid);
+const status=accessStatus(grant);
+const pub=cachedProfiles.get(u.uid)||{};
+return `<div class="item">
+<strong>${esc(userName(u.uid,u))}</strong>
+<div class="muted">UID: ${esc(u.uid)}</div>
+<div class="muted">フレンドID: ${esc(u.friendId||pub.friendId||"-")}</div>
+<div style="margin-top:7px">
+<span class="badge ${status.cls}">${esc(status.label)}</span>
+</div>
+<div class="muted" style="margin-top:5px">有効期限: ${
+grant?.unlimited===true?"無期限":dateText(grant?.expiresAt)
+}</div>
+<div class="access-box">
+<div class="muted">利用期限を変更</div>
+<div class="access-actions">
+<button class="btn small" data-grant="${esc(u.uid)}" data-days="1">1日</button>
+<button class="btn small" data-grant="${esc(u.uid)}" data-days="7">7日</button>
+<button class="btn small" data-grant="${esc(u.uid)}" data-days="30">30日</button>
+<button class="btn secondary small" data-grant="${esc(u.uid)}" data-days="unlimited">無期限</button>
+</div>
+<div class="access-date">
+<div><label>指定日まで</label>
+<input type="datetime-local" data-date="${esc(u.uid)}"></div>
+<button class="btn secondary small" data-custom="${esc(u.uid)}">設定</button>
+</div>
+</div>
+</div>`;
+}).join(""):'<div class="muted">該当ユーザーはいません。</div>';
+
+document.querySelectorAll("[data-grant]").forEach(b=>{
+b.onclick=()=>setAccess(b.dataset.grant,b.dataset.days);
+});
+document.querySelectorAll("[data-custom]").forEach(b=>{
+b.onclick=()=>{
+const uid=b.dataset.custom;
+const input=[...document.querySelectorAll("[data-date]")]
+.find(x=>x.dataset.date===uid);
+if(!input||!input.value){msg("有効期限を指定してください。","error");return}
+const date=new Date(input.value);
+if(Number.isNaN(date.getTime())||date.getTime()<=Date.now()){
+msg("未来の日時を指定してください。","error");return;
+}
+setAccess(uid,"custom",date);
+};
+});
+}
+
+async function setAccess(uid,mode,customDate=null){
+if(!isAdmin(auth.currentUser))return;
+const u=cachedUsers.find(x=>x.uid===uid);
+if(!u)return;
+let expiresAt=null;
+let unlimited=false;
+if(mode==="unlimited"){
+unlimited=true;
+}else if(mode==="custom"){
+expiresAt=customDate;
+}else{
+const days=Number(mode);
+if(![1,7,30].includes(days))return;
+expiresAt=new Date(Date.now()+days*86400000);
+}
+const description=unlimited?"無期限":dateText(expiresAt);
+if(!confirm(`${userName(uid,u)} の利用期限を ${description} に設定しますか？`))return;
+try{
+const ref=doc(db,"accessGrants",uid);
+const existing=await getDoc(ref);
+const payload={
+uid,
+unlimited,
+expiresAt:unlimited?null:Timestamp.fromDate(expiresAt),
+updatedAt:serverTimestamp(),
+updatedBy:auth.currentUser.uid
+};
+if(!existing.exists()){
+payload.createdAt=serverTimestamp();
+payload.createdBy=auth.currentUser.uid;
+}
+await setDoc(ref,payload,{merge:true});
+msg("利用期限を変更しました。","success");
+await Promise.all([loadAccessUsers(),loadDashboard()]);
+}catch(e){msg("利用期限の変更に失敗しました："+e.message,"error")}
+}
+
+$("accessSearchBtn").onclick=renderAccessUsers;
+$("accessSearch").addEventListener("keydown",e=>{
+if(e.key==="Enter")renderAccessUsers();
+});
+$("accessReloadBtn").onclick=loadAccessUsers;
+
+$("grantExistingBtn").onclick=async()=>{
+if(!isAdmin(auth.currentUser))return;
+const targets=cachedUsers.filter(u=>!cachedGrants.has(u.uid));
+if(!targets.length){msg("期限未設定のユーザーはいません。","success");return}
+if(!confirm(`${targets.length}人に、現在から7日間の利用期限を付与します。よろしいですか？`))return;
+const btn=$("grantExistingBtn");
+btn.disabled=true;
+let success=0,failed=0;
+try{
+for(const u of targets){
+try{
+const ref=doc(db,"accessGrants",u.uid);
+const latest=await getDoc(ref);
+if(latest.exists())continue;
+await setDoc(ref,{
+uid:u.uid,
+unlimited:false,
+expiresAt:Timestamp.fromDate(new Date(Date.now()+7*86400000)),
+createdAt:serverTimestamp(),
+updatedAt:serverTimestamp(),
+createdBy:auth.currentUser.uid,
+updatedBy:auth.currentUser.uid
+});
+success++;
+}catch(e){console.error(e);failed++}
+}
+await Promise.all([loadAccessUsers(),loadDashboard()]);
+msg(`${success}人に7日間の期限を付与しました。失敗: ${failed}人`,failed?"error":"success");
+}finally{btn.disabled=false}
+};
+
+/* 二つ名管理 */
 
 async function loadTitles(){
- try{
-  const snap=await getDocs(collection(db,"titleParts"));
-  const arr=snap.docs.map(d=>({id:d.id,...d.data()}));
-  arr.sort((a,b)=>(a.type||"").localeCompare(b.type||"")||(a.name||"").localeCompare(b.name||""));
-  $("titleList").innerHTML=arr.length?arr.map(t=>{
-    const type=t.type==="back"?"後半":"前半",active=t.active!==false;
-    return `<div class="item"><strong>${esc(t.name||"名称未設定")}</strong>
-    <span class="badge">${type}</span><span class="badge">${esc(rarityName(t.rarity))}</span>
-    ${active?'<span class="badge">公開</span>':'<span class="badge">非公開</span>'}
-    ${t.unlockAchievementId?`<span class="badge">実績: ${esc(t.unlockAchievementId)}</span>`:""}
-    <div class="row" style="margin-top:9px">
-    <button class="btn small" data-edit-title="${t.id}">編集</button>
-    <button class="btn secondary small" data-toggle-title="${t.id}" data-active="${active}">${active?"非公開にする":"公開する"}</button>
-    <button class="btn danger small" data-delete-title="${t.id}">削除</button></div></div>`;
-  }).join(""):"<div class='muted'>二つ名はまだ登録されていません。</div>";
-  document.querySelectorAll("[data-edit-title]").forEach(b=>b.onclick=()=>editTitle(b.dataset.editTitle));
-  document.querySelectorAll("[data-toggle-title]").forEach(b=>b.onclick=()=>toggleTitle(b.dataset.toggleTitle,b.dataset.active!=="true"));
-  document.querySelectorAll("[data-delete-title]").forEach(b=>b.onclick=()=>deleteTitle(b.dataset.deleteTitle));
- }catch(e){msg("二つ名の取得に失敗しました："+e.message,"error")}
+try{
+const snap=await getDocs(collection(db,"titleParts"));
+const arr=snap.docs.map(d=>({id:d.id,...d.data()}));
+arr.sort((a,b)=>(a.type||"").localeCompare(b.type||"")||(a.name||"").localeCompare(b.name||""));
+$("titleList").innerHTML=arr.length?arr.map(t=>{
+const type=t.type==="back"?"後半":"前半",active=t.active!==false;
+return `<div class="item">
+<strong>${esc(t.name||"名称未設定")}</strong>
+<span class="badge">${type}</span>
+<span class="badge">${esc(rarityName(t.rarity))}</span>
+${active?'<span class="badge">公開</span>':'<span class="badge">非公開</span>'}
+${t.unlockAchievementId?`<span class="badge">実績: ${esc(t.unlockAchievementId)}</span>`:""}
+<div class="row" style="margin-top:9px">
+<button class="btn small" data-edit-title="${t.id}">編集</button>
+<button class="btn secondary small" data-toggle-title="${t.id}" data-active="${active}">${active?"非公開にする":"公開する"}</button>
+<button class="btn danger small" data-delete-title="${t.id}">削除</button>
+</div></div>`;
+}).join(""):"<div class='muted'>二つ名はまだ登録されていません。</div>";
+document.querySelectorAll("[data-edit-title]").forEach(b=>b.onclick=()=>editTitle(b.dataset.editTitle));
+document.querySelectorAll("[data-toggle-title]").forEach(b=>b.onclick=()=>toggleTitle(b.dataset.toggleTitle,b.dataset.active!=="true"));
+document.querySelectorAll("[data-delete-title]").forEach(b=>b.onclick=()=>deleteTitle(b.dataset.deleteTitle));
+}catch(e){msg("二つ名の取得に失敗しました："+e.message,"error")}
 }
-function rarityName(r){return({normal:"通常",rare:"レア",epic:"エピック",legendary:"伝説"})[r]||"通常"}
+function rarityName(r){
+return({normal:"通常",rare:"レア",epic:"エピック",legendary:"伝説"})[r]||"通常";
+}
 async function editTitle(id){
- const d=await getDoc(doc(db,"titleParts",id));if(!d.exists())return;const t=d.data();
- $("titleEditId").value=id;$("titleType").value=t.type||"front";$("titleName").value=t.name||"";
- $("titleRarity").value=t.rarity||"normal";$("unlockAchievementId").value=t.unlockAchievementId||"";
- $("titleActive").checked=t.active!==false;$("cancelTitleBtn").classList.remove("hidden");
- window.scrollTo({top:0,behavior:"smooth"});
+const d=await getDoc(doc(db,"titleParts",id));
+if(!d.exists())return;
+const t=d.data();
+$("titleEditId").value=id;
+$("titleType").value=t.type||"front";
+$("titleName").value=t.name||"";
+$("titleRarity").value=t.rarity||"normal";
+$("unlockAchievementId").value=t.unlockAchievementId||"";
+$("titleActive").checked=t.active!==false;
+$("cancelTitleBtn").classList.remove("hidden");
+window.scrollTo({top:0,behavior:"smooth"});
 }
-function clearTitleForm(){$("titleEditId").value="";$("titleName").value="";$("unlockAchievementId").value="";$("titleType").value="front";$("titleRarity").value="normal";$("titleActive").checked=true;$("cancelTitleBtn").classList.add("hidden")}
+function clearTitleForm(){
+$("titleEditId").value="";
+$("titleName").value="";
+$("unlockAchievementId").value="";
+$("titleType").value="front";
+$("titleRarity").value="normal";
+$("titleActive").checked=true;
+$("cancelTitleBtn").classList.add("hidden");
+}
 $("cancelTitleBtn").onclick=clearTitleForm;
 $("saveTitleBtn").onclick=async()=>{
- const user=auth.currentUser;if(!isAdmin(user))return;
- const name=$("titleName").value.trim();if(!name){msg("二つ名を入力してください","error");return}
- const payload={type:$("titleType").value,name,rarity:$("titleRarity").value,unlockAchievementId:$("unlockAchievementId").value.trim(),active:$("titleActive").checked,updatedAt:new Date()};
- try{
-  const id=$("titleEditId").value;
-  if(id)await updateDoc(doc(db,"titleParts",id),payload);
-  else await addDoc(collection(db,"titleParts"),{...payload,createdAt:new Date(),createdBy:user.uid});
-  clearTitleForm();await loadTitles();msg("二つ名を保存しました","success");
- }catch(e){msg("二つ名の保存に失敗しました："+e.message,"error")}
+const user=auth.currentUser;
+if(!isAdmin(user))return;
+const name=$("titleName").value.trim();
+if(!name){msg("二つ名を入力してください","error");return}
+const payload={
+type:$("titleType").value,
+name,
+rarity:$("titleRarity").value,
+unlockAchievementId:$("unlockAchievementId").value.trim(),
+active:$("titleActive").checked,
+updatedAt:new Date()
 };
-async function toggleTitle(id,active){try{await updateDoc(doc(db,"titleParts",id),{active,updatedAt:new Date()});await loadTitles()}catch(e){msg("公開状態の変更に失敗しました："+e.message,"error")}}
-async function deleteTitle(id){if(!confirm("この二つ名を削除しますか？"))return;try{await deleteDoc(doc(db,"titleParts",id));await loadTitles();msg("削除しました","success")}catch(e){msg("削除に失敗しました："+e.message,"error")}}
+try{
+const id=$("titleEditId").value;
+if(id)await updateDoc(doc(db,"titleParts",id),payload);
+else await addDoc(collection(db,"titleParts"),{
+...payload,createdAt:new Date(),createdBy:user.uid
+});
+clearTitleForm();
+await loadTitles();
+msg("二つ名を保存しました","success");
+}catch(e){msg("二つ名の保存に失敗しました："+e.message,"error")}
+};
+async function toggleTitle(id,active){
+try{
+await updateDoc(doc(db,"titleParts",id),{active,updatedAt:new Date()});
+await loadTitles();
+}catch(e){msg("公開状態の変更に失敗しました："+e.message,"error")}
+}
+async function deleteTitle(id){
+if(!confirm("この二つ名を削除しますか？"))return;
+try{
+await deleteDoc(doc(db,"titleParts",id));
+await loadTitles();
+msg("削除しました","success");
+}catch(e){msg("削除に失敗しました："+e.message,"error")}
+}
+
+/* お知らせ管理 */
 
 async function loadAnnouncements(){
- try{
-  const snap=await getDocs(collection(db,"announcements"));
-  const arr=snap.docs.map(d=>({id:d.id,...d.data()}));
-  arr.sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
-  $("announcementList").innerHTML=arr.length?arr.map(a=>`<div class="item"><strong>${esc(a.title||"無題")}</strong>
-  ${a.important?'<span class="badge important">重要</span>':""}${a.pinned?'<span class="badge pinned">固定</span>':""}
-  ${a.active!==false?'<span class="badge">公開</span>':'<span class="badge">非公開</span>'}
-  <p>${esc(a.message||"").replace(/\n/g,"<br>")}</p>
-  <div class="row"><button class="btn small" data-edit-ann="${a.id}">編集</button>
-  <button class="btn secondary small" data-toggle-ann="${a.id}" data-active="${a.active!==false}">${a.active!==false?"非公開":"公開"}</button>
-  <button class="btn danger small" data-delete-ann="${a.id}">削除</button></div></div>`).join(""):"<div class='muted'>お知らせはありません。</div>";
-  document.querySelectorAll("[data-edit-ann]").forEach(b=>b.onclick=()=>editAnnouncement(b.dataset.editAnn));
-  document.querySelectorAll("[data-toggle-ann]").forEach(b=>b.onclick=()=>toggleAnnouncement(b.dataset.toggleAnn,b.dataset.active!=="true"));
-  document.querySelectorAll("[data-delete-ann]").forEach(b=>b.onclick=()=>deleteAnnouncement(b.dataset.deleteAnn));
- }catch(e){msg("お知らせの取得に失敗しました："+e.message,"error")}
+try{
+const snap=await getDocs(collection(db,"announcements"));
+const arr=snap.docs.map(d=>({id:d.id,...d.data()}));
+arr.sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
+$("announcementList").innerHTML=arr.length?arr.map(a=>`
+<div class="item">
+<strong>${esc(a.title||"無題")}</strong>
+${a.important?'<span class="badge important">重要</span>':""}
+${a.pinned?'<span class="badge pinned">固定</span>':""}
+${a.active!==false?'<span class="badge">公開</span>':'<span class="badge">非公開</span>'}
+<p>${esc(a.message||"").replace(/\n/g,"<br>")}</p>
+<div class="row">
+<button class="btn small" data-edit-ann="${a.id}">編集</button>
+<button class="btn secondary small" data-toggle-ann="${a.id}" data-active="${a.active!==false}">${a.active!==false?"非公開":"公開"}</button>
+<button class="btn danger small" data-delete-ann="${a.id}">削除</button>
+</div></div>`).join(""):"<div class='muted'>お知らせはありません。</div>";
+document.querySelectorAll("[data-edit-ann]").forEach(b=>b.onclick=()=>editAnnouncement(b.dataset.editAnn));
+document.querySelectorAll("[data-toggle-ann]").forEach(b=>b.onclick=()=>toggleAnnouncement(b.dataset.toggleAnn,b.dataset.active!=="true"));
+document.querySelectorAll("[data-delete-ann]").forEach(b=>b.onclick=()=>deleteAnnouncement(b.dataset.deleteAnn));
+}catch(e){msg("お知らせの取得に失敗しました："+e.message,"error")}
 }
 async function editAnnouncement(id){
- const d=await getDoc(doc(db,"announcements",id));if(!d.exists())return;const a=d.data();
- $("announcementEditId").value=id;$("announcementTitle").value=a.title||"";$("announcementMessage").value=a.message||"";
- $("announcementImportant").checked=!!a.important;$("announcementPinned").checked=!!a.pinned;$("announcementActive").checked=a.active!==false;$("cancelAnnouncementBtn").classList.remove("hidden");
+const d=await getDoc(doc(db,"announcements",id));
+if(!d.exists())return;
+const a=d.data();
+$("announcementEditId").value=id;
+$("announcementTitle").value=a.title||"";
+$("announcementMessage").value=a.message||"";
+$("announcementImportant").checked=!!a.important;
+$("announcementPinned").checked=!!a.pinned;
+$("announcementActive").checked=a.active!==false;
+$("cancelAnnouncementBtn").classList.remove("hidden");
 }
-function clearAnnouncementForm(){$("announcementEditId").value="";$("announcementTitle").value="";$("announcementMessage").value="";$("announcementImportant").checked=false;$("announcementPinned").checked=false;$("announcementActive").checked=true;$("cancelAnnouncementBtn").classList.add("hidden")}
+function clearAnnouncementForm(){
+$("announcementEditId").value="";
+$("announcementTitle").value="";
+$("announcementMessage").value="";
+$("announcementImportant").checked=false;
+$("announcementPinned").checked=false;
+$("announcementActive").checked=true;
+$("cancelAnnouncementBtn").classList.add("hidden");
+}
 $("cancelAnnouncementBtn").onclick=clearAnnouncementForm;
 $("saveAnnouncementBtn").onclick=async()=>{
- const user=auth.currentUser,title=$("announcementTitle").value.trim(),message=$("announcementMessage").value.trim();
- if(!title||!message){msg("タイトルと内容を入力してください","error");return}
- const payload={title,message,important:$("announcementImportant").checked,pinned:$("announcementPinned").checked,active:$("announcementActive").checked,updatedAt:new Date(),updatedBy:user.uid};
- try{
-  const id=$("announcementEditId").value;
-  if(id)await updateDoc(doc(db,"announcements",id),payload);
-  else await addDoc(collection(db,"announcements"),{...payload,createdAt:new Date(),createdBy:user.uid});
-  clearAnnouncementForm();await loadAnnouncements();await loadDashboard();msg("お知らせを保存しました","success");
- }catch(e){msg("お知らせの保存に失敗しました："+e.message,"error")}
+const user=auth.currentUser;
+const title=$("announcementTitle").value.trim();
+const message=$("announcementMessage").value.trim();
+if(!title||!message){
+msg("タイトルと内容を入力してください","error");
+return;
+}
+const payload={
+title,message,
+important:$("announcementImportant").checked,
+pinned:$("announcementPinned").checked,
+active:$("announcementActive").checked,
+updatedAt:new Date(),
+updatedBy:user.uid
 };
-async function toggleAnnouncement(id,active){try{await updateDoc(doc(db,"announcements",id),{active,updatedAt:new Date(),updatedBy:auth.currentUser.uid});await loadAnnouncements();await loadDashboard()}catch(e){msg("変更に失敗しました："+e.message,"error")}}
-async function deleteAnnouncement(id){if(!confirm("このお知らせを削除しますか？"))return;try{await deleteDoc(doc(db,"announcements",id));await loadAnnouncements();await loadDashboard()}catch(e){msg("削除に失敗しました："+e.message,"error")}}
+try{
+const id=$("announcementEditId").value;
+if(id)await updateDoc(doc(db,"announcements",id),payload);
+else await addDoc(collection(db,"announcements"),{
+...payload,createdAt:new Date(),createdBy:user.uid
+});
+clearAnnouncementForm();
+await loadAnnouncements();
+await loadDashboard();
+msg("お知らせを保存しました","success");
+}catch(e){msg("お知らせの保存に失敗しました："+e.message,"error")}
+};
+async function toggleAnnouncement(id,active){
+try{
+await updateDoc(doc(db,"announcements",id),{
+active,updatedAt:new Date(),updatedBy:auth.currentUser.uid
+});
+await loadAnnouncements();
+await loadDashboard();
+}catch(e){msg("変更に失敗しました："+e.message,"error")}
+}
+async function deleteAnnouncement(id){
+if(!confirm("このお知らせを削除しますか？"))return;
+try{
+await deleteDoc(doc(db,"announcements",id));
+await loadAnnouncements();
+await loadDashboard();
+}catch(e){msg("削除に失敗しました："+e.message,"error")}
+}
+
+/* ユーザー検索 */
 
 $("searchUserBtn").onclick=async()=>{
- const term=$("userSearch").value.trim().toLowerCase();if(!term){msg("検索文字を入力してください","error");return}
- try{
-  const snap=await getDocs(collection(db,"users")),rows=[];
-  for(const d of snap.docs){
-   const u=d.data(),pub=(await getDoc(doc(db,"publicProfiles",d.id))).data()||{};
-   const hay=[d.id,u.email,u.rankingName,u.friendId,pub.rankingName,pub.friendId].join(" ").toLowerCase();
-   if(hay.includes(term))rows.push({id:d.id,u,pub});
-  }
-  $("userResults").innerHTML=rows.length?rows.map(x=>`<div class="item"><strong>${esc(x.u.rankingName||x.pub.rankingName||"ユーザー")}</strong>
-  <div class="muted">UID: ${esc(x.id)}</div><div class="muted">メール: ${esc(x.u.email||"-")}</div>
-  <div class="muted">フレンドID: ${esc(x.u.friendId||x.pub.friendId||"-")}</div>
-  <div class="row" style="margin-top:8px"><button class="btn secondary small" data-disable-user="${x.id}" data-disabled="${x.u.disabled===true}">${x.u.disabled===true?"利用停止を解除":"利用停止"}</button></div></div>`).join(""):"<div class='muted'>該当ユーザーなし</div>";
-  document.querySelectorAll("[data-disable-user]").forEach(b=>b.onclick=()=>toggleUserDisabled(b.dataset.disableUser,b.dataset.disabled!=="true"));
- }catch(e){msg("ユーザー検索に失敗しました："+e.message,"error")}
+const term=$("userSearch").value.trim().toLowerCase();
+if(!term){msg("検索文字を入力してください","error");return}
+try{
+const snap=await getDocs(collection(db,"users"));
+const rows=[];
+for(const d of snap.docs){
+const u=d.data();
+const pub=(await getDoc(doc(db,"publicProfiles",d.id))).data()||{};
+const hay=[d.id,u.email,u.rankingName,u.friendId,pub.rankingName,pub.friendId]
+.join(" ").toLowerCase();
+if(hay.includes(term))rows.push({id:d.id,u,pub});
+}
+$("userResults").innerHTML=rows.length?rows.map(x=>`
+<div class="item">
+<strong>${esc(x.u.rankingName||x.pub.rankingName||"ユーザー")}</strong>
+<div class="muted">UID: ${esc(x.id)}</div>
+<div class="muted">メール: ${esc(x.u.email||"-")}</div>
+<div class="muted">フレンドID: ${esc(x.u.friendId||x.pub.friendId||"-")}</div>
+<div class="row" style="margin-top:8px">
+<button class="btn secondary small" data-disable-user="${x.id}" data-disabled="${x.u.disabled===true}">
+${x.u.disabled===true?"利用停止を解除":"利用停止"}
+</button>
+</div>
+</div>`).join(""):"<div class='muted'>該当ユーザーなし</div>";
+document.querySelectorAll("[data-disable-user]").forEach(b=>{
+b.onclick=()=>toggleUserDisabled(b.dataset.disableUser,b.dataset.disabled!=="true");
+});
+}catch(e){msg("ユーザー検索に失敗しました："+e.message,"error")}
 };
 async function toggleUserDisabled(uid,disabled){
- try{await setDoc(doc(db,"users",uid),{disabled},{merge:true});await setDoc(doc(db,"publicProfiles",uid),{disabled},{merge:true});$("searchUserBtn").click();msg(disabled?"利用停止にしました":"利用停止を解除しました","success")}
- catch(e){msg("変更に失敗しました："+e.message,"error")}
+try{
+await setDoc(doc(db,"users",uid),{disabled},{merge:true});
+await setDoc(doc(db,"publicProfiles",uid),{disabled},{merge:true});
+$("searchUserBtn").click();
+msg(disabled?"利用停止にしました":"利用停止を解除しました","success");
+}catch(e){msg("変更に失敗しました："+e.message,"error")}
 }
 
+/* ランキング */
+
 async function loadRanking(){
- try{
-  const snap=await getDocs(collection(db,"ranking")),arr=snap.docs.map(d=>({id:d.id,...d.data()}));
-  arr.sort((a,b)=>(Number(b.improvementRate)||0)-(Number(a.improvementRate)||0));
-  $("rankingList").innerHTML=arr.slice(0,100).map((r,i)=>`<div class="item"><strong>${i+1}位 ${esc(r.rankingName||"ユーザー")}</strong><div class="muted">改善率: ${typeof r.improvementRate==="number"?r.improvementRate.toFixed(1)+"%":"-"}</div><div class="muted">UID: ${esc(r.id)}</div></div>`).join("")||"<div class='muted'>ランキングデータなし</div>";
- }catch(e){$("rankingList").innerHTML="<div class='muted'>ランキングを取得できませんでした。</div>"}
+try{
+const snap=await getDocs(collection(db,"ranking"));
+const arr=snap.docs.map(d=>({id:d.id,...d.data()}));
+arr.sort((a,b)=>(Number(b.improvementRate)||0)-(Number(a.improvementRate)||0));
+$("rankingList").innerHTML=arr.slice(0,100).map((r,i)=>`
+<div class="item">
+<strong>${i+1}位 ${esc(r.rankingName||"ユーザー")}</strong>
+<div class="muted">改善率: ${
+typeof r.improvementRate==="number"?r.improvementRate.toFixed(1)+"%":"-"
+}</div>
+<div class="muted">UID: ${esc(r.id)}</div>
+</div>`).join("")||"<div class='muted'>ランキングデータなし</div>";
+}catch(e){
+$("rankingList").innerHTML="<div class='muted'>ランキングを取得できませんでした。</div>";
 }
+}
+
+/* 友達申請監視 */
+
 async function loadFriendRequests(){
- try{
-  const snap=await getDocs(query(collection(db,"friendRequests"),where("status","==","pending")));
-  $("friendRequestList").innerHTML=snap.docs.map(d=>{const x=d.data();return `<div class="item"><strong>保留中</strong><div class="muted">送信者: ${esc(x.fromUid||"-")}</div><div class="muted">受信者: ${esc(x.toUid||"-")}</div><div class="muted">申請ID: ${esc(d.id)}</div></div>`}).join("")||"<div class='muted'>保留中の申請はありません。</div>";
- }catch(e){$("friendRequestList").innerHTML="<div class='muted'>友達申請を取得できませんでした。</div>"}
+try{
+const snap=await getDocs(query(
+collection(db,"friendRequests"),
+where("status","==","pending")
+));
+$("friendRequestList").innerHTML=snap.docs.map(d=>{
+const x=d.data();
+return `<div class="item">
+<strong>保留中</strong>
+<div class="muted">送信者: ${esc(x.fromUid||"-")}</div>
+<div class="muted">受信者: ${esc(x.toUid||"-")}</div>
+<div class="muted">申請ID: ${esc(d.id)}</div>
+</div>`;
+}).join("")||"<div class='muted'>保留中の申請はありません。</div>";
+}catch(e){
+$("friendRequestList").innerHTML="<div class='muted'>友達申請を取得できませんでした。</div>";
+}
 }
 </script>
 </body>
