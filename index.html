@@ -8,6 +8,19 @@
 
 
 <style>
+.access-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.access-summary strong{font-size:1.05rem}
+.access-summary span,.access-meter-caption{font-size:.85rem;color:#aaa}
+.access-meter{height:12px;width:100%;overflow:hidden;border-radius:999px;background:#303030;border:1px solid #444}
+.access-meter-fill{height:100%;border-radius:999px;background:#f0f0f0;transition:width .3s ease}
+.access-meter-fill.low{background:#e6b84b}
+.access-meter-fill.expired{background:#b94b4b}
+.access-meter-fill.unlimited{background:#8ac6a3}
+.access-meter-caption{margin-top:7px}
+.ranking-mode-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:12px 0}
+.ranking-mode-tabs .tab-button{font-size:.88rem;padding:10px 5px}
+@media(max-width:480px){.ranking-mode-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 
@@ -1180,6 +1193,45 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 
   </div>
 
+  <section class="card" id="announcementsCard">
+
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+
+
+      <h2 style="margin:0">
+        お知らせ
+      </h2>
+
+
+      <button
+        id="announcementRefreshBtn"
+        class="secondary"
+        style="margin:0">
+        更新
+      </button>
+
+
+    </div>
+
+
+    <div
+      id="announcementArea"
+      style="margin-top:12px">
+
+
+      <div class="rank-loading">
+        お知らせを読み込んでいます...
+      </div>
+
+
+    </div>
+
+
+  </section>
+
+
+
 
 <section class="card"><h2>利用期限</h2><div id="homeAccessStatus" class="notice">利用期限を確認しています…</div></section>
   <section class="card">
@@ -1312,42 +1364,7 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
   </section>
 
 
-  <section class="card" id="announcementsCard">
-
-
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-
-
-      <h2 style="margin:0">
-        お知らせ
-      </h2>
-
-
-      <button
-        id="announcementRefreshBtn"
-        class="secondary"
-        style="margin:0">
-        更新
-      </button>
-
-
-    </div>
-
-
-    <div
-      id="announcementArea"
-      style="margin-top:12px">
-
-
-      <div class="rank-loading">
-        お知らせを読み込んでいます...
-      </div>
-
-
-    </div>
-
-
-  </section>
+  
 
 
   <section class="card">
@@ -1437,6 +1454,8 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
       <div class="badge" id="micStatus">
         マイク：待機中
       </div>
+
+      <div class="badge">音イベント：<span id="liveSoundEvents">0</span></div>
 
 
       <div class="badge" id="wakeStatus">
@@ -1728,7 +1747,13 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
   <section class="card">
 
 
-    <h2>睡眠改善ランキング</h2>
+    <h2 id="rankingHeading">睡眠改善ランキング</h2>
+    <div class="tab-buttons ranking-mode-tabs" role="group" aria-label="ランキングの種類">
+      <button type="button" class="tab-button active" data-ranking-mode="improvement">改善率</button>
+      <button type="button" class="tab-button" data-ranking-mode="xp">XP</button>
+      <button type="button" class="tab-button" data-ranking-mode="streak">連続記録</button>
+      <button type="button" class="tab-button" data-ranking-mode="measurements">測定回数</button>
+    </div>
 
 
     <p class="notice">
@@ -2899,7 +2924,31 @@ const ADMIN_EMAIL="kawamata.sousuke@ryugasaki1-h.ibk.ed.jp";
 function isAdminUser(){return !!currentUser&&currentUser.email===ADMIN_EMAIL;}
 function hasAccess(){return isAdminUser()||(!!currentUser&&accessChecked&&!!accessGrant&&(accessGrant.unlimited===true||(accessGrant.expiresAt?.toMillis?.()||0)>Date.now()));}
 function accessLabel(){if(!currentUser)return "Googleログインが必要です";if(!accessChecked)return "利用期限を確認しています…";if(!accessGrant)return isAdminUser()?"管理者：利用期限未設定（利用は可能）":"利用期限を確認できません";if(accessGrant.unlimited===true)return "利用期限：無期限";const expiresAt=accessGrant.expiresAt;const expiresMs=expiresAt?.toMillis?.()||0;const ms=expiresMs-Date.now();return ms>0?`残り ${Math.ceil(ms/86400000)} 日（${expiresAt.toDate().toLocaleDateString('ja-JP')}まで）`:"利用期限が終了しました。管理者に延長を依頼してください。";}
-function updateAccessUI(){const t=accessLabel();for(const id of ['homeAccessStatus','settingsAccessStatus']){const e=document.getElementById(id);if(e)e.textContent=t;}const start=document.getElementById('startBtn');if(start&&!measuring)start.disabled=!hasAccess();}
+function updateAccessUI(){
+  const t=accessLabel();
+  const home=document.getElementById("homeAccessStatus");
+  const settings=document.getElementById("settingsAccessStatus");
+  if(settings)settings.textContent=t;
+  if(home){
+    if(!currentUser||!accessChecked||!accessGrant){
+      home.textContent=t;
+    }else if(accessGrant.unlimited===true){
+      home.innerHTML=`<div class="access-summary"><strong>利用期限：無期限</strong><span>いつでも利用できます</span></div><div class="access-meter" role="img" aria-label="利用期限は無期限"><div class="access-meter-fill unlimited" style="width:100%"></div></div>`;
+    }else{
+      const expiresAt=accessGrant.expiresAt;
+      const expiresMs=expiresAt?.toMillis?.()||0;
+      const createdMs=accessGrant.createdAt?.toMillis?.()||Math.max(0,expiresMs-ACCESS_DAYS*86400000);
+      const total=Math.max(1,expiresMs-createdMs);
+      const remaining=Math.max(0,expiresMs-Date.now());
+      const percent=Math.max(0,Math.min(100,remaining/total*100));
+      const days=Math.max(0,Math.ceil(remaining/86400000));
+      const expired=remaining<=0;
+      home.innerHTML=`<div class="access-summary"><strong>${expired?"利用期限が終了しました":`残り ${days} 日`}</strong><span>${expiresAt?.toDate?expiresAt.toDate().toLocaleDateString("ja-JP")+"まで":""}</span></div><div class="access-meter" role="img" aria-label="利用期限の残り ${Math.round(percent)} パーセント"><div class="access-meter-fill ${expired?"expired":percent<=25?"low":""}" style="width:${percent}%"></div></div><div class="access-meter-caption">${expired?"管理者に期限の延長を依頼してください":`利用期間の約 ${Math.round(percent)}% が残っています`}</div>`;
+    }
+  }
+  const start=document.getElementById("startBtn");
+  if(start&&!measuring)start.disabled=!hasAccess();
+}
 async function ensureAccessGrant(){accessChecked=false;accessGrant=null;updateAccessUI();if(!currentUser)return;const admin=isAdminUser();const ref=doc(db,'accessGrants',currentUser.uid);try{let snap=await getDoc(ref);if(!snap.exists()&&!admin){const now=Date.now();try{await setDoc(ref,{uid:currentUser.uid,unlimited:false,createdAt:serverTimestamp(),expiresAt:Timestamp.fromMillis(now+ACCESS_DAYS*86400000-60000)});}catch(e){console.warn('Trial creation:',e);}snap=await getDoc(ref);}accessGrant=snap.exists()?snap.data():null;}catch(e){console.error('Access check failed:',e);}finally{accessChecked=true;updateAccessUI();}}
 
 
@@ -2941,6 +2990,10 @@ let largeSeconds=0;
 
 
 let soundEvents=0;
+const MIN_MEASUREMENT_MS=15*60*1000;
+let soundAboveThreshold=false;
+let soundAboveSamples=0;
+let soundQuietSamples=0;
 
 
 let movementScoreTotal=0;
@@ -3053,7 +3106,7 @@ function showPage(pageName){
 
 
   if(pageName==="ranking"){
-    loadRanking();
+    updateRanking();
   }
 
 
@@ -5998,6 +6051,9 @@ function resetMeasurementValues(){
 
 
   soundEvents=0;
+  soundAboveThreshold=false;
+  soundAboveSamples=0;
+  soundQuietSamples=0;
 
 
   movementScoreTotal=0;
@@ -6089,124 +6145,70 @@ async function releaseWakeLock(){
 
 
 async function startMicrophone(){
-
-
   try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error("このブラウザではマイク入力を利用できません。HTTPSで開いているか確認してください。");
+    }
 
+    micStream=await navigator.mediaDevices.getUserMedia({
+      audio:{
+        echoCancellation:false,
+        noiseSuppression:false,
+        autoGainControl:false
+      }
+    });
 
-    micStream=
-      await navigator
-        .mediaDevices
-        .getUserMedia({
-          audio:true
-        });
+    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+    if(!AudioContextClass) throw new Error("AudioContextに対応していません。");
+    audioContext=new AudioContextClass();
+    if(audioContext.state==="suspended") await audioContext.resume();
 
+    const source=audioContext.createMediaStreamSource(micStream);
+    analyser=audioContext.createAnalyser();
+    analyser.fftSize=1024;
+    analyser.smoothingTimeConstant=0;
+    source.connect(analyser);
 
-    audioContext=
-      new AudioContext();
+    const buffer=new Float32Array(analyser.fftSize);
+    soundAboveThreshold=false;
+    soundAboveSamples=0;
+    soundQuietSamples=0;
 
+    audioTimer=setInterval(()=>{
+      if(!measuring || !analyser) return;
+      analyser.getFloatTimeDomainData(buffer);
+      let sumSquares=0;
+      for(let i=0;i<buffer.length;i++) sumSquares+=buffer[i]*buffer[i];
+      const rms=Math.sqrt(sumSquares/buffer.length);
+      // 一瞬のノイズでは数えず、音が続いたときに1イベントとして数える。
+      const threshold=0.025;
+      if(rms>=threshold){
+        soundAboveSamples++;
+        soundQuietSamples=0;
+        if(!soundAboveThreshold && soundAboveSamples>=2){
+          soundEvents++;
+          soundAboveThreshold=true;
+          const soundEl=document.getElementById("liveSoundEvents");
+          if(soundEl) soundEl.textContent=String(soundEvents);
+          const micEl=document.getElementById("micStatus");
+          if(micEl) micEl.textContent="マイク：音を検出";
+        }
+      }else{
+        soundAboveSamples=0;
+        soundQuietSamples++;
+        // 約1秒静かになったら次の音を数えられるようにする。
+        if(soundQuietSamples>=4) soundAboveThreshold=false;
+      }
+    },250);
 
-    const source=
-      audioContext
-        .createMediaStreamSource(
-          micStream
-        );
-
-
-    analyser=
-      audioContext
-        .createAnalyser();
-
-
-    analyser.fftSize=256;
-
-
-    source.connect(
-      analyser
-    );
-
-
-    const buffer=
-      new Uint8Array(
-        analyser.frequencyBinCount
-      );
-
-
-    audioTimer=
-      setInterval(
-        ()=>{
-
-
-          if(!measuring)return;
-
-
-          analyser
-            .getByteFrequencyData(
-              buffer
-            );
-
-
-          let sum=0;
-
-
-          for(
-            let i=0;
-            i<buffer.length;
-            i++
-          ){
-
-
-            sum+=buffer[i];
-
-
-          }
-
-
-          const average=
-            sum/buffer.length;
-
-
-          if(average>45){
-            soundEvents++;
-          }
-
-
-        },
-        3000
-      );
-
-
-    document
-      .getElementById(
-        "micStatus"
-      )
-      .textContent=
-      "マイク：測定中";
-
-
+    const micEl=document.getElementById("micStatus");
+    if(micEl) micEl.textContent="マイク：入力中（音待ち）";
   }catch(e){
-
-
-    console.warn(
-      "Microphone unavailable:",
-      e
-    );
-
-
-    document
-      .getElementById(
-        "micStatus"
-      )
-      .textContent=
-      "マイク：利用不可";
-
-
+    console.warn("Microphone unavailable:",e);
+    const micEl=document.getElementById("micStatus");
+    if(micEl) micEl.textContent="マイク：利用不可（権限・HTTPSを確認）";
   }
-
-
 }
-
-
 
 
 function stopMicrophone(){
@@ -6669,63 +6671,52 @@ async function startMeasurement(){
 
 
 function stopMeasurement(){
-
-
   if(!measuring)return;
 
+  const elapsed=Date.now()-measurementStart;
+  if(elapsed<MIN_MEASUREMENT_MS){
+    const remaining=Math.ceil((MIN_MEASUREMENT_MS-elapsed)/60000);
+    const cancel=confirm(`測定開始から15分経っていません。あと約${remaining}分で記録できます。\n今終了すると今回の測定は保存されません。終了しますか？`);
+    if(!cancel)return;
+
+    measuring=false;
+    if(measurementTimer){clearInterval(measurementTimer);measurementTimer=null;}
+    stopMotion();
+    stopMicrophone();
+    releaseWakeLock();
+    const startBtn=document.getElementById("startBtn");
+    const stopBtn=document.getElementById("stopBtn");
+    if(startBtn) startBtn.disabled=false;
+    if(stopBtn) stopBtn.disabled=true;
+    const status=document.getElementById("measurementStatus");
+    if(status) status.textContent="15分未満のため、今回の測定は保存されませんでした。";
+    return;
+  }
 
   measuring=false;
-
-
-  clearInterval(
-    measurementTimer
-  );
-
-
-  measurementTimer=null;
-
-
+  if(measurementTimer){clearInterval(measurementTimer);measurementTimer=null;}
   stopMotion();
-
-
   stopMicrophone();
-
-
   releaseWakeLock();
 
+  const startBtn=document.getElementById("startBtn");
+  const stopBtn=document.getElementById("stopBtn");
+  if(startBtn) startBtn.disabled=false;
+  if(stopBtn) stopBtn.disabled=true;
 
-  document
-    .getElementById(
-      "startBtn"
-    )
-    .disabled=false;
-
-
-  document
-    .getElementById(
-      "stopBtn"
-    )
-    .disabled=true;
-
-
-  document
-    .getElementById(
-      "measurementStatus"
-    )
-    .textContent=
-    "測定終了。結果を分析しています。";
-
-
+  const status=document.getElementById("measurementStatus");
+  if(status) status.textContent="測定終了。結果を分析しています。";
   calculateResult();
-
-
 }
-
-
 
 
 function calculateResult(){
 
+  const elapsedCheck=Date.now()-measurementStart;
+  if(elapsedCheck<MIN_MEASUREMENT_MS){
+    alert("睡眠測定は最低15分必要です。15分以上測定してから終了してください。");
+    return;
+  }
 
   const durationMs=
     Date.now()-
@@ -7746,6 +7737,9 @@ document
 
 
 
+let currentRankingMode="improvement";
+
+
 async function updateRanking(){
 
 
@@ -7765,20 +7759,6 @@ async function updateRanking(){
 
   const rate=
     getRankingScore();
-
-
-  if(rate===null){
-
-
-    showRankingMessage(
-      "あと少し！最初の7回の測定が終わるとランキングに参加できます。"
-    );
-
-
-    return;
-
-
-  }
 
 
   let rankingName=
@@ -7833,6 +7813,9 @@ async function updateRanking(){
               .currentAverage
           )||0,
 
+        xp:Number(data.xp)||0,
+        streak:Number(calculateStreak())||0,
+        measurementCount:Array.isArray(data.history)?data.history.length:0,
 
         updatedAt:
           serverTimestamp()
@@ -7921,16 +7904,8 @@ async function loadRanking(){
           d.data();
 
 
-        if(
-          item&&
-          typeof item.improvementRate===
-          "number"
-        ){
-
-
+        if(item&&item.uid){
           items.push(item);
-
-
         }
 
 
@@ -7970,193 +7945,80 @@ async function loadRanking(){
 
 
 function renderRanking(items){
-
-
-  const list=
-    document.getElementById(
-      "rankingList"
-    );
-
-
-  const myStatus=
-    document.getElementById(
-      "rankingMyStatus"
-    );
-
-
-  if(
-    !Array.isArray(items)||
-    items.length===0
-  ){
-
-
-    list.innerHTML=
-      '<div class="rank-loading">まだランキングデータがありません。</div>';
-
-
-    myStatus.textContent=
-      "まだランキング参加者がいません。";
-
-
-    return;
-
-
-  }
-
-
-  const valid=
-    items
-      .filter(
-        x=>
-          x&&
-          typeof x.improvementRate===
-          "number"
-      )
-      .sort(
-        (a,b)=>
-          b.improvementRate-
-          a.improvementRate
-      );
-
-
-  const top=
-    valid.slice(
-      0,
-      10
-    );
-
-
-  const myIndex=
-    currentUser
-    ?valid.findIndex(
-      x=>
-        x.uid===
-        currentUser.uid
-    )
-    :-1;
-
-
-  if(myIndex>=0){
-
-
-    const rate=
-      Number(
-        valid[myIndex]
-          .improvementRate
-      )||0;
-
-
-    myStatus.innerHTML=
-      `<strong>あなたの順位：</strong>
-       ${myIndex+1}位 
-       <strong>改善率：</strong>
-       ${rate>=0?"+":""}
-       ${rate.toFixed(1)}%`;
-
-
-  }else{
-
-
-    myStatus.textContent=
-      "現在ランキングに参加していません。";
-
-
-  }
-
-
-  list.innerHTML="";
-
-
-  top.forEach(
-    (item,index)=>{
-
-
-      const row=
-        document.createElement(
-          "div"
-        );
-
-
-      row.className=
-        "rank-row"+
-        (
-          currentUser&&
-          item.uid===
-          currentUser.uid
-          ?" me"
-          :""
-        );
-
-
-      const name=
-        item.uid===
-        currentUser?.uid
-        ?"あなた"
-        :(item.displayName||
-          "ユーザー");
-
-
-      const rate=
-        Number(
-          item.improvementRate
-        )||0;
-
-
-      row.innerHTML=`
-
-
-        <div class="rank-number">
-          ${index+1}
-        </div>
-
-
-        <div>
-
-
-          <div class="rank-name">
-            ${escapeHTML(name)}
-          </div>
-
-
-          <div class="rank-sub">
-            タップしてプロフィールを見る
-          </div>
-
-
-        </div>
-
-
-        <div class="rank-score">
-
-
-          ${rate>=0?"+":""}
-          ${rate.toFixed(1)}%
-
-
-        </div>
-
-
-      `;
-
-
-      row.addEventListener(
-        "click",
-        ()=>openPublicProfile(
-          item.uid
-        )
-      );
-
-
-      list.appendChild(row);
-
-
+  const list=document.getElementById("rankingList");
+  const myStatus=document.getElementById("rankingMyStatus");
+  const heading=document.getElementById("rankingHeading");
+  if(!list||!myStatus)return;
+
+  const modes={
+    improvement:{
+      title:"睡眠改善ランキング",
+      value:x=>typeof x.improvementRate==="number"?x.improvementRate:null,
+      format:v=>`${v>=0?"+":""}${v.toFixed(1)}%`,
+      empty:"睡眠改善率ランキングに参加できる人は、最初の7回の測定を完了してください。"
+    },
+    xp:{
+      title:"XPランキング",
+      value:x=>Number.isFinite(Number(x.xp))?Number(x.xp):0,
+      format:v=>`${Math.round(v)} XP`,
+      empty:"XPランキングのデータがまだありません。"
+    },
+    streak:{
+      title:"連続記録ランキング",
+      value:x=>Number.isFinite(Number(x.streak))?Number(x.streak):0,
+      format:v=>`${Math.round(v)}日`,
+      empty:"連続記録のデータがまだありません。"
+    },
+    measurements:{
+      title:"測定回数ランキング",
+      value:x=>Number.isFinite(Number(x.measurementCount))?Number(x.measurementCount):0,
+      format:v=>`${Math.round(v)}回`,
+      empty:"測定回数ランキングのデータがまだありません。"
     }
-  );
+  };
+  const mode=modes[currentRankingMode]||modes.improvement;
+  if(heading)heading.textContent=mode.title;
+  document.querySelectorAll("[data-ranking-mode]").forEach(btn=>{
+    const active=btn.dataset.rankingMode===currentRankingMode;
+    btn.classList.toggle("active",active);
+    btn.setAttribute("aria-pressed",active?"true":"false");
+  });
 
+  const valid=(Array.isArray(items)?items:[])
+    .filter(x=>x&&x.uid)
+    .map(x=>({...x,_rankValue:mode.value(x)}))
+    .filter(x=>x._rankValue!==null&&Number.isFinite(x._rankValue))
+    .sort((a,b)=>b._rankValue-a._rankValue);
 
+  const myIndex=currentUser?valid.findIndex(x=>x.uid===currentUser.uid):-1;
+  if(myIndex>=0){
+    myStatus.innerHTML=`<strong>あなたの順位：</strong>${myIndex+1}位　<strong>${escapeHTML(mode.title.replace("ランキング",""))}：</strong>${escapeHTML(mode.format(valid[myIndex]._rankValue))}`;
+  }else if(currentRankingMode==="improvement"){
+    myStatus.textContent="最初の7回の測定が終わると、睡眠改善ランキングに参加できます。";
+  }else{
+    myStatus.textContent="あなたのランキングデータはまだありません。測定後に更新してください。";
+  }
+
+  if(valid.length===0){
+    list.innerHTML=`<div class="rank-loading">${escapeHTML(mode.empty)}</div>`;
+    return;
+  }
+  list.innerHTML="";
+  valid.slice(0,10).forEach((item,index)=>{
+    const row=document.createElement("div");
+    row.className="rank-row"+(currentUser&&item.uid===currentUser.uid?" me":"");
+    const name=item.uid===currentUser?.uid?"あなた":(item.displayName||"ユーザー");
+    row.innerHTML=`
+      <div class="rank-number">${index+1}</div>
+      <div>
+        <div class="rank-name">${escapeHTML(name)}</div>
+        <div class="rank-sub">タップしてプロフィールを見る</div>
+      </div>
+      <div class="rank-score">${escapeHTML(mode.format(item._rankValue))}</div>`;
+    row.addEventListener("click",()=>openPublicProfile(item.uid));
+    list.appendChild(row);
+  });
 }
-
-
 
 
 function showRankingMessage(
@@ -8285,13 +8147,17 @@ async function openPublicProfile(uid){
       "自己紹介はありません。";
 
 
+    const resolvedPublicTitle=getTitleFromIds(
+      profile.equippedTitlePrefix||"",
+      profile.equippedTitleSuffix||""
+    );
     document.getElementById(
       "publicTitle"
     ).textContent=
-      profile.titleText||
-      [profile.equippedTitlePrefix||"",profile.equippedTitleSuffix||""]
-        .join("")||
-      "二つ名未設定";
+      resolvedPublicTitle||
+      (profile.titleText&&!/achievement_[a-z0-9_]+/i.test(profile.titleText)
+        ?profile.titleText
+        :"二つ名未設定");
 
 
     const xp=
@@ -8452,8 +8318,37 @@ function normalizeTitleType(part){
 }
 
 
+function getTitlePartLabel(id){
+  if(!id)return "";
+
+  // 保存されている値は表示名ではなく二つ名パーツのID。
+  const part=availableTitleParts.find(p=>String(p.id)===String(id));
+  if(part)return getTitlePartName(part);
+
+  // 実績報酬の二つ名はFirestoreのtitlePartsにない場合もあるため、
+  // 実績カタログから表示名を引く。
+  const achievementPrefix="achievement_";
+  if(String(id).startsWith(achievementPrefix)){
+    const achievementId=String(id).slice(achievementPrefix.length);
+    const achievement=typeof ACHIEVEMENT_CATALOG!=="undefined"
+      ?ACHIEVEMENT_CATALOG.find(a=>String(a.id)===achievementId)
+      :null;
+    return achievement?String(achievement.reward||""):"";
+  }
+
+  // 読み込み前や削除済みのパーツIDを、そのまま画面に出さない。
+  return "";
+}
+
+function getTitleFromIds(prefixId,suffixId){
+  return getTitlePartLabel(prefixId)+getTitlePartLabel(suffixId);
+}
+
 function getEquippedTitle(){
-  return `${data.equippedTitlePrefix||""}${data.equippedTitleSuffix||""}`;
+  return getTitleFromIds(
+    data.equippedTitlePrefix||"",
+    data.equippedTitleSuffix||""
+  );
 }
 
 
@@ -10119,6 +10014,13 @@ document
     loadRanking
   );
 
+document.querySelectorAll("[data-ranking-mode]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    currentRankingMode=button.dataset.rankingMode||"improvement";
+    loadRanking();
+  });
+});
+
 
 
 
@@ -10868,4 +10770,4 @@ showPage(
 
 
 </body>
-</html>
+</html>        
