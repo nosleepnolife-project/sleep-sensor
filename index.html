@@ -1002,6 +1002,35 @@ select{
 }
 
 
+
+/* 下部タスクバー */
+main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
+.bottom-taskbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:1500;
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  background:rgba(24,24,24,.97);border-top:1px solid #383838;
+  box-shadow:0 -8px 24px rgba(0,0,0,.25);backdrop-filter:blur(14px)
+}
+.bottom-taskbar-item{
+  min-width:0;min-height:54px;border:0;border-radius:10px;
+  background:transparent;color:#929292;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;padding:5px 2px;
+  font-size:10px;font-weight:700;cursor:pointer
+}
+.bottom-taskbar-item .taskbar-icon{font-size:21px;line-height:1.2}
+.bottom-taskbar-item.active{background:#fff;color:#111}
+.bottom-taskbar-item:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@media(min-width:900px){
+  .bottom-taskbar{left:50%;right:auto;transform:translateX(-50%);width:min(650px,calc(100% - 32px));border:1px solid #383838;border-bottom:0;border-radius:16px 16px 0 0}
+}
+@media(max-width:420px){
+  .bottom-taskbar{gap:1px;padding-left:4px;padding-right:4px}
+  .bottom-taskbar-item{font-size:9px}
+  .bottom-taskbar-item .taskbar-icon{font-size:19px}
+  .logo{font-size:16px}
+}
+
 @media(prefers-reduced-motion:reduce){
 
 
@@ -2675,6 +2704,24 @@ select{
 
 
 
+<nav id="bottomTaskbar" class="bottom-taskbar" aria-label="メインナビゲーション">
+  <button class="bottom-taskbar-item active" data-page="home" aria-label="ホーム">
+    <span class="taskbar-icon">⌂</span><span>ホーム</span>
+  </button>
+  <button class="bottom-taskbar-item" data-page="measure" aria-label="睡眠測定">
+    <span class="taskbar-icon">◉</span><span>測定</span>
+  </button>
+  <button class="bottom-taskbar-item" data-page="ranking" aria-label="ランキング">
+    <span class="taskbar-icon">♛</span><span>ランキング</span>
+  </button>
+  <button class="bottom-taskbar-item" data-page="friends" aria-label="フレンド">
+    <span class="taskbar-icon">♧</span><span>フレンド</span>
+  </button>
+  <button class="bottom-taskbar-item" data-page="profile" aria-label="プロフィール">
+    <span class="taskbar-icon">●</span><span>マイページ</span>
+  </button>
+</nav>
+
 <script type="module">
 
 
@@ -2987,6 +3034,14 @@ function showPage(pageName){
       );
     });
 
+  document
+    .querySelectorAll(".bottom-taskbar-item")
+    .forEach(item=>{
+      const active=item.dataset.page===pageName;
+      item.classList.toggle("active",active);
+      item.setAttribute("aria-current",active?"page":"false");
+    });
+
 
   closeMenu();
 
@@ -3038,6 +3093,13 @@ document
   });
 
 
+
+
+document
+  .querySelectorAll(".bottom-taskbar-item")
+  .forEach(item=>{
+    item.addEventListener("click",()=>showPage(item.dataset.page));
+  });
 
 
 document
@@ -10800,6 +10862,9 @@ showPage(
 
 
 </script>
+
+
+
 
 
 </body>
