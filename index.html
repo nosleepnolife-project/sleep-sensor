@@ -8,7 +8,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#111">
-<title>No Sleep No Life v30</title>
+<title>No Sleep No Life v33</title>
 
 
 <style>
@@ -1072,6 +1072,22 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 
 /* v32 extras */
 .extra-bars{display:flex;align-items:end;gap:5px;height:155px;padding:12px 0;border-bottom:1px solid #555}.extra-bar{flex:1;background:#8b9dd7;min-height:3px;border-radius:5px 5px 0 0;position:relative}.extra-bar span{position:absolute;bottom:-24px;left:0;right:0;text-align:center;font-size:10px;color:#aaa}.extra-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.extra-day{min-height:55px;background:#242424;color:#eee;padding:5px 2px;margin:0;font-size:12px}.extra-day.recorded{border:1px solid #9baeff}.extra-day.selected{background:#e3e9ff;color:#111}.extra-day:disabled{opacity:.25}.extra-swatch{display:inline-block;width:24px;height:24px;border-radius:6px;vertical-align:middle;margin-right:6px}.extra-theme-blue .home-welcome{border-color:#7f9fd7}.extra-theme-purple .home-welcome{border-color:#aa83d7}.extra-theme-green .home-welcome{border-color:#70ac91}
+
+/* v33: scrollable navigation for all features */
+.bottom-taskbar{
+ display:flex!important;grid-template-columns:none!important;justify-content:flex-start;
+ gap:5px;overflow-x:auto;overscroll-behavior-x:contain;
+ scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:#505050 transparent;
+ -webkit-overflow-scrolling:touch;max-width:100%;
+}
+.bottom-taskbar-item{
+ flex:0 0 calc((100% - 20px)/5);min-width:67px;max-width:118px;
+ scroll-snap-align:center;white-space:nowrap;position:relative;
+}
+.bottom-taskbar-item.active:after{content:"";position:absolute;top:2px;left:27%;right:27%;height:3px;background:#879dff;border-radius:3px}
+.bottom-taskbar-item .taskbar-label{overflow:hidden;text-overflow:ellipsis;max-width:100%}
+@media(min-width:900px){.bottom-taskbar{width:min(780px,calc(100% - 32px));max-width:min(780px,calc(100% - 32px))}.bottom-taskbar-item{flex-basis:calc((100% - 20px)/5)}}
+@media(max-width:420px){.bottom-taskbar-item{flex-basis:calc((100% - 20px)/5);min-width:65px;font-size:9px}}
 </style>
 </head>
 
@@ -1170,7 +1186,7 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 
   <div class="logo-area">
     <div class="logo">NO SLEEP NO LIFE</div>
-    <div class="version">v30β</div>
+    <div class="version">v33β</div>
   </div>
 
 
@@ -2746,21 +2762,17 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 
 
 <nav id="bottomTaskbar" class="bottom-taskbar" aria-label="メインナビゲーション">
-  <button class="bottom-taskbar-item active" data-page="home" aria-label="ホーム">
-    <span class="taskbar-icon">⌂</span><span>ホーム</span>
-  </button>
-  <button class="bottom-taskbar-item" data-page="measure" aria-label="睡眠測定">
-    <span class="taskbar-icon">◉</span><span>測定</span>
-  </button>
-  <button class="bottom-taskbar-item" data-page="ranking" aria-label="ランキング">
-    <span class="taskbar-icon">♛</span><span>ランキング</span>
-  </button>
-  <button class="bottom-taskbar-item" data-page="friends" aria-label="フレンド">
-    <span class="taskbar-icon">♧</span><span>フレンド</span>
-  </button>
-  <button class="bottom-taskbar-item" data-page="profile" aria-label="プロフィール">
-    <span class="taskbar-icon">●</span><span>マイページ</span>
-  </button>
+  <button type="button" class="bottom-taskbar-item active" data-page="home" aria-label="ホーム"><span class="taskbar-icon" aria-hidden="true">⌂</span><span class="taskbar-label">ホーム</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="measure" aria-label="測定"><span class="taskbar-icon" aria-hidden="true">◉</span><span class="taskbar-label">測定</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="insights" aria-label="分析・カレンダー"><span class="taskbar-icon" aria-hidden="true">▥</span><span class="taskbar-label">分析・カレンダー</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="missions" aria-label="ミッション"><span class="taskbar-icon" aria-hidden="true">✓</span><span class="taskbar-label">ミッション</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="ranking" aria-label="ランキング"><span class="taskbar-icon" aria-hidden="true">♛</span><span class="taskbar-label">ランキング</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="friends" aria-label="フレンド"><span class="taskbar-icon" aria-hidden="true">♧</span><span class="taskbar-label">フレンド</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="history" aria-label="履歴"><span class="taskbar-icon" aria-hidden="true">▤</span><span class="taskbar-label">履歴</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="achievements" aria-label="実績"><span class="taskbar-icon" aria-hidden="true">★</span><span class="taskbar-label">実績</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="profile" aria-label="マイページ"><span class="taskbar-icon" aria-hidden="true">●</span><span class="taskbar-label">マイページ</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="extras" aria-label="通知・外観"><span class="taskbar-icon" aria-hidden="true">◷</span><span class="taskbar-label">通知・外観</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="settings" aria-label="設定"><span class="taskbar-icon" aria-hidden="true">⚙</span><span class="taskbar-label">設定</span></button>
 </nav>
 
 <script type="module">
@@ -3109,6 +3121,9 @@ function showPage(pageName){
       const active=item.dataset.page===pageName;
       item.classList.toggle("active",active);
       item.setAttribute("aria-current",active?"page":"false");
+      if(active && item.closest("#bottomTaskbar")){
+        requestAnimationFrame(()=>item.scrollIntoView({behavior:"smooth",block:"nearest",inline:"nearest"}));
+      }
     });
 
 
