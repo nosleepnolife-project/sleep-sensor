@@ -1113,6 +1113,17 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 .top-profile-text strong,.top-profile-text small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
 .top-profile-text strong{font-size:12px}.top-profile-text small{font-size:10px;color:#bbb}
 @media(max-width:480px){.logo{font-size:12px}.menu-btn{margin-right:6px;flex-shrink:0}.top-profile{max-width:48vw}.top-profile-text strong{font-size:11px}.top-profile-text small{font-size:9px}}
+/* 睡眠測定中の暗転表示 */
+.sleep-curtain{position:fixed;inset:0;z-index:11000;background:#000;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 7s ease,visibility 0s linear 7s;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.sleep-curtain.active{opacity:1;visibility:visible;pointer-events:auto;transition:opacity 7s ease}
+.sleep-curtain.blackout .sleep-curtain-title{opacity:0;animation:none}
+.sleep-curtain-title{font-size:clamp(22px,6vw,36px);font-weight:700;letter-spacing:.15em;color:#b5b5b5;text-align:center;animation:sleepBlink 3s ease-in-out infinite}
+@keyframes sleepBlink{0%,100%{opacity:.18}50%{opacity:.85}}
+.sleep-curtain-stop{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom,0px));right:18px;background:#202020;color:#aaa;border:1px solid #444;font-size:12px;padding:9px 13px;opacity:.2}
+.sleep-curtain-stop:focus,.sleep-curtain-stop:hover{opacity:1}
+.sleep-curtain.blackout .sleep-curtain-stop{opacity:0}
+.sleep-curtain.blackout:active .sleep-curtain-stop,.sleep-curtain.blackout .sleep-curtain-stop:focus{opacity:1}
+@media(prefers-reduced-motion:reduce){.sleep-curtain-title{animation:none;opacity:.7}}
 </style>
 </head>
 
@@ -1225,6 +1236,7 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 </header>
 
 
+<div id="sleepCurtain" class="sleep-curtain" aria-live="off"><div class="sleep-curtain-title">おやすみ計測中</div><button id="sleepCurtainStop" class="sleep-curtain-stop" type="button">測定を終了</button></div>
 <main>
 
 
@@ -1480,7 +1492,7 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 
 <div id="page-insights" class="page"><h1 class="page-title">睡眠分析レポート</h1><p class="page-description">保存済みの測定記録から集計します。推定値であり医学的な診断ではありません。</p><section class="card"><h2>最近7日間の睡眠時間</h2><div id="extraReportStats" class="notice"></div><div id="extraReportBars" class="extra-bars"></div><p class="muted">各棒は日ごとの合計測定時間です。</p></section><section class="card"><h2>睡眠カレンダー</h2><div class="row"><button class="secondary" id="extraPrevMonth">前月</button><strong id="extraMonthLabel"></strong><button class="secondary" id="extraNextMonth">次月</button></div><div id="extraCalendar" class="extra-calendar"></div><div id="extraDayDetail" class="notice" style="margin-top:14px">日付を選択してください。</div></section></div>
 <div id="page-missions" class="page"><h1 class="page-title">デイリーミッション</h1><p class="page-description">その日の記録状況に応じて進捗を確認できます。</p><section class="card"><h2>今日のミッション</h2><div id="extraMissions"></div><div id="missionClaimStatus" class="notice" aria-live="polite">達成したミッションの報酬を受け取れます。</div><p class="muted">達成状況は保存済みの睡眠記録をもとに自動判定します。</p></section></div>
-<div id="page-extras" class="page"><h1 class="page-title">通知・カスタマイズ</h1><section class="card"><h2>プロフィール背景</h2><p class="muted">この端末で表示するホーム画面のアクセントを選べます。</p><div id="backgroundUnlockInfo" class="notice"></div><select id="extraTheme"><option value="default">標準</option><option value="blue">ブルー</option><option value="purple">パープル</option><option value="green">グリーン</option><option value="stars">星空（実績3個）</option><option value="aurora">オーロラ（実績6個）</option><option value="gold">ゴールド（実績10個）</option></select></section><section class="card"><h2>就寝リマインダー</h2><p class="muted">ページを開いている間、指定時刻になると画面内でお知らせします。ブラウザを閉じている間のプッシュ通知には対応していません。</p><label for="extraReminder">お知らせ時刻</label><input type="time" id="extraReminder" value="22:00"><label class="check"><input type="checkbox" id="extraReminderEnabled"> リマインダーを有効にする</label><div id="extraReminderStatus" class="notice"></div></section></div>
+<div id="page-extras" class="page"><h1 class="page-title">通知・カスタマイズ</h1><section class="card"><h2>プロフィール背景</h2><p class="muted">この端末で表示するホーム画面のアクセントを選べます。</p><div id="backgroundUnlockInfo" class="notice"></div><select id="extraTheme"><option value="default">標準</option><option value="blue">ブルー</option><option value="purple">パープル</option><option value="green">グリーン</option><option value="stars">星空（実績3個）</option><option value="aurora">オーロラ（実績6個）</option><option value="gold">ゴールド（実績10個）</option></select></section><section class="card"><h2>就寝リマインダー</h2><p class="muted">指定時刻に端末の通知を表示します（通知許可が必要）。アプリを開いている間のみ動作します。iPhoneではホーム画面に追加したWebアプリからの通知許可が必要な場合があります。アプリを閉じた状態での通知には別途プッシュ通知の設定が必要です。</p><label for="extraReminder">お知らせ時刻</label><input type="time" id="extraReminder" value="22:00"><label class="check"><input type="checkbox" id="extraReminderEnabled"> リマインダーを有効にする</label><div class="row" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0"><button type="button" id="extraNotifyPermission">通知を許可する</button><button type="button" class="secondary" id="extraNotifyTest">テスト通知を送る</button></div><div id="extraReminderStatus" class="notice"></div></section></div>
 
 <!-- =========================
      MEASURE
@@ -1598,7 +1610,7 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
   </section>
 
 
-  <section class="card">
+  <section class="card" style="display:none">
 
 
     <h2>睡眠グラフ</h2>
@@ -3021,6 +3033,25 @@ async function ensureAccessGrant(){accessChecked=false;accessGrant=null;updateAc
 
 
 
+let sleepLastBigMove=0;
+let sleepCurtainTicker=null;
+function showSleepCurtain(){
+ sleepLastBigMove=Date.now();
+ const curtain=document.getElementById("sleepCurtain");
+ curtain.classList.remove("blackout");
+ curtain.classList.add("active");
+ if(sleepCurtainTicker)clearInterval(sleepCurtainTicker);
+ sleepCurtainTicker=setInterval(()=>{
+  if(!measuring)return;
+  curtain.classList.toggle("blackout",Date.now()-sleepLastBigMove>=60000);
+ },1000);
+}
+function hideSleepCurtain(){
+ if(sleepCurtainTicker){clearInterval(sleepCurtainTicker);sleepCurtainTicker=null}
+ const curtain=document.getElementById("sleepCurtain");
+ curtain.classList.remove("active","blackout");
+}
+document.getElementById("sleepCurtainStop").addEventListener("click",()=>stopMeasurement());
 let measuring=false;
 
 
@@ -10884,9 +10915,46 @@ function v34UpdateThemeOptions(){const allowed=v34UnlockedThemes(),count=new Set
  if(!allowed[select.value])select.value='default';
 }
 function extraLoadSettings(){let x={};try{x=JSON.parse(localStorage.getItem(extraSettingKey())||'{}')}catch(e){}document.getElementById('extraTheme').value=x.theme||'default';document.getElementById('extraReminder').value=x.time||'22:00';document.getElementById('extraReminderEnabled').checked=!!x.enabled;v34UpdateThemeOptions();extraApplySettings()}
-function extraApplySettings(){const theme=document.getElementById('extraTheme').value;v34UpdateThemeOptions();document.body.classList.remove('extra-theme-blue','extra-theme-purple','extra-theme-green','extra-theme-stars','extra-theme-aurora','extra-theme-gold');if(theme!=='default'&&v34UnlockedThemes()[theme])document.body.classList.add('extra-theme-'+theme);const enabled=document.getElementById('extraReminderEnabled').checked,time=document.getElementById('extraReminder').value;document.getElementById('extraReminderStatus').textContent=enabled?`毎日 ${time} にページ内でお知らせします（ページ表示中のみ）。`:'リマインダーはオフです。'}
+function extraApplySettings(){
+ const theme=document.getElementById('extraTheme').value;v34UpdateThemeOptions();
+ document.body.classList.remove('extra-theme-blue','extra-theme-purple','extra-theme-green','extra-theme-stars','extra-theme-aurora','extra-theme-gold');
+ if(theme!=='default'&&v34UnlockedThemes()[theme])document.body.classList.add('extra-theme-'+theme);
+ const enabled=document.getElementById('extraReminderEnabled').checked,time=document.getElementById('extraReminder').value;
+ const supported=('Notification' in window)&&window.isSecureContext;
+ const state=!supported?'このブラウザでは通知を利用できません。':Notification.permission==='granted'?'通知は許可されています。':Notification.permission==='denied'?'通知がブロックされています。端末またはブラウザの設定から許可してください。':'「通知を許可する」を押してください。';
+ document.getElementById('extraReminderStatus').textContent=enabled?`毎日 ${time} にお知らせします。${state} ※アプリを開いている間のみ動作します。`:'リマインダーはオフです。'+state;
+}
 for(const id of ['extraTheme','extraReminder','extraReminderEnabled'])document.getElementById(id).addEventListener('change',()=>{localStorage.setItem(extraSettingKey(),JSON.stringify({theme:document.getElementById('extraTheme').value,time:document.getElementById('extraReminder').value,enabled:document.getElementById('extraReminderEnabled').checked}));extraApplySettings()});
-let extraLastNotice='';setInterval(()=>{const enabled=document.getElementById('extraReminderEnabled').checked;if(!enabled)return;const now=new Date(),hhmm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),key=extraDateKey(now)+' '+hhmm;if(hhmm===document.getElementById('extraReminder').value&&extraLastNotice!==key){extraLastNotice=key;document.getElementById('extraReminderStatus').textContent='そろそろ就寝予定時刻です。睡眠の準備をしましょう。'}},30000);
+async function extraRequestNotification(){
+ if(!('Notification' in window)||!window.isSecureContext){alert('この環境では通知に対応していません。HTTPSのページでお試しください。');return false;}
+ try{const permission=await Notification.requestPermission();extraApplySettings();return permission==='granted';}
+ catch(e){alert('通知の許可に失敗しました: '+e.message);return false;}
+}
+async function extraSendNotification(test=false){
+ if(!('Notification' in window)||Notification.permission!=='granted')return false;
+ try{
+  const n=new Notification(test?'No Sleep No Life テスト通知':'No Sleep No Life｜おやすみの時間',{body:test?'通知は正常に動作しています。':'そろそろ就寝予定時刻です。睡眠の準備をしましょう。',icon:'./favicon-192.png',tag:test?'nsnl-reminder-test':'nsnl-bedtime-reminder'});
+  n.onclick=()=>{window.focus();n.close()};return true;
+ }catch(e){console.warn('通知表示に失敗:',e);return false;}
+}
+document.getElementById('extraNotifyPermission').addEventListener('click',extraRequestNotification);
+document.getElementById('extraNotifyTest').addEventListener('click',async()=>{
+ if(!('Notification' in window)||Notification.permission!=='granted'){const ok=await extraRequestNotification();if(!ok)return;}
+ const ok=await extraSendNotification(true);
+ document.getElementById('extraReminderStatus').textContent=ok?'テスト通知を送信しました。通知欄を確認してください。':'通知を表示できませんでした。ブラウザの通知設定を確認してください。';
+});
+function extraCheckReminder(){
+ if(!document.getElementById('extraReminderEnabled').checked)return;
+ const now=new Date(),hhmm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+ if(hhmm!==document.getElementById('extraReminder').value)return;
+ const key=extraDateKey(now)+' '+hhmm,storageKey=extraSettingKey()+'-last-notified';
+ if(localStorage.getItem(storageKey)===key)return;
+ localStorage.setItem(storageKey,key);
+ document.getElementById('extraReminderStatus').textContent='そろそろ就寝予定時刻です。睡眠の準備をしましょう。';
+ extraSendNotification(false).then(ok=>{if(!ok)console.info('通知が許可されていないため、画面内表示のみ行いました。')});
+}
+setInterval(extraCheckReminder,10000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)extraCheckReminder()});
 const extraOldShowPage=showPage;showPage=function(name){extraOldShowPage(name);if(name==='insights'||name==='missions')extraRender();if(name==='extras')extraLoadSettings()};
 
 
