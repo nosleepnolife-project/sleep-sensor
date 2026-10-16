@@ -8019,7 +8019,7 @@ async function loadRanking(){
           d.data();
 
 
-        if(item&&item.uid){
+        if(item&&item.uid&&item.hiddenFromRanking!==true){
           items.push(item);
         }
 
