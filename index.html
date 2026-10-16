@@ -3043,7 +3043,7 @@ let largeSeconds=0;
 
 
 let soundEvents=0;
-const MIN_MEASUREMENT_MS=15*60*1000;
+// 学校公開版：測定時間の最低制限なし
 let soundAboveThreshold=false;
 let soundAboveSamples=0;
 let soundQuietSamples=0;
@@ -6745,26 +6745,6 @@ async function startMeasurement(){
 function stopMeasurement(){
   if(!measuring)return;
 
-  const elapsed=Date.now()-measurementStart;
-  if(elapsed<MIN_MEASUREMENT_MS){
-    const remaining=Math.ceil((MIN_MEASUREMENT_MS-elapsed)/60000);
-    const cancel=confirm(`測定開始から15分経っていません。あと約${remaining}分で記録できます。\n今終了すると今回の測定は保存されません。終了しますか？`);
-    if(!cancel)return;
-
-    measuring=false;
-    if(measurementTimer){clearInterval(measurementTimer);measurementTimer=null;}
-    stopMotion();
-    stopMicrophone();
-    releaseWakeLock();
-    const startBtn=document.getElementById("startBtn");
-    const stopBtn=document.getElementById("stopBtn");
-    if(startBtn) startBtn.disabled=false;
-    if(stopBtn) stopBtn.disabled=true;
-    const status=document.getElementById("measurementStatus");
-    if(status) status.textContent="15分未満のため、今回の測定は保存されませんでした。";
-    return;
-  }
-
   measuring=false;
   if(measurementTimer){clearInterval(measurementTimer);measurementTimer=null;}
   stopMotion();
@@ -6783,12 +6763,6 @@ function stopMeasurement(){
 
 
 function calculateResult(){
-
-  const elapsedCheck=Date.now()-measurementStart;
-  if(elapsedCheck<MIN_MEASUREMENT_MS){
-    alert("睡眠測定は最低15分必要です。15分以上測定してから終了してください。");
-    return;
-  }
 
   const durationMs=
     Date.now()-
