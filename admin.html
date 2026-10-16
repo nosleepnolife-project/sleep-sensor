@@ -102,7 +102,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid #8297e8;outline-offset
 <section id="titlesSection" class="card"><h2>二つ名管理</h2><p class="muted">前半と後半を別々に登録できます。利用者は獲得済みの前半・後半を自由に組み合わせられます。</p><input type="hidden" id="titleEditId"><div class="grid"><div><label>種類</label><select id="titleType"><option value="front">前半</option><option value="back">後半</option></select></div><div><label>二つ名</label><input id="titleName" placeholder="例：不屈の"></div><div><label>レア度</label><select id="titleRarity"><option value="normal">通常</option><option value="rare">レア</option><option value="epic">エピック</option><option value="legendary">伝説</option></select></div><div><label>解放条件の実績ID</label><input id="unlockAchievementId" placeholder="例：streak_7"></div></div><label>公開状態</label><div class="check"><input type="checkbox" id="titleActive" checked><span>利用者側で使用可能</span></div><div class="row"><button id="saveTitleBtn" class="btn">二つ名を保存</button><button id="cancelTitleBtn" class="btn secondary hidden">編集をキャンセル</button></div><h3>登録済み二つ名</h3><div id="titleList"></div></section>
 <section id="announcementsSection" class="card"><h2>お知らせ管理</h2><input type="hidden" id="announcementEditId"><label>タイトル</label><input id="announcementTitle" placeholder="お知らせタイトル"><label>内容</label><textarea id="announcementMessage" placeholder="お知らせ内容"></textarea><div class="row"><div class="check"><input type="checkbox" id="announcementImportant"><span>重要</span></div><div class="check"><input type="checkbox" id="announcementPinned"><span>固定</span></div><div class="check"><input type="checkbox" id="announcementActive" checked><span>公開</span></div></div><div class="row"><button id="saveAnnouncementBtn" class="btn">お知らせを保存</button><button id="cancelAnnouncementBtn" class="btn secondary hidden">編集をキャンセル</button></div><h3>登録済みお知らせ</h3><div id="announcementList"></div></section>
 <section id="userDetailPanel" class="card hidden"><div class="row" style="justify-content:space-between"><h2>選択したユーザーの詳細</h2><button id="closeUserDetailBtn" class="btn secondary small">閉じる</button></div><div id="userDetailContent"><div class="muted">ユーザーを選択してください。</div></div></section>\n<section id="userSearchSection" class="card"><h2>ユーザー検索</h2><div class="row"><input id="userSearch" placeholder="メールアドレス、UID、フレンドID、表示名"><button id="searchUserBtn" class="btn">検索</button></div><div id="userResults"></div></section>
-<section id="rankingSection" class="card"><h2>ランキング</h2><p class="muted">アカウントを削除せず、ランキングへの表示だけを切り替えられます。非表示のアカウントもここには表示されます。</p><div id="rankingList"></div></section><section id="friendRequestsSection" class="card"><h2>友達申請監視</h2><div id="friendRequestList"></div></section>
+<section id="rankingSection" class="card"><h2>ランキング</h2><p class="muted">アカウントを削除せず、ランキングへの表示だけを切り替えられます。非表示のアカウントもここには表示されます。</p><div id="rankingList"></div></section><section id="friendRequestsSection" class="card"><h2>友達申請管理</h2><p class="muted">保留中の申請を管理者が却下できます。却下してもユーザーアカウントや既存のフレンド関係は削除されません。</p><button id="reloadFriendRequests" class="btn secondary small" type="button">申請を更新</button><div id="friendRequestList"></div></section>
 </div>
 </main>
 <script>
@@ -339,7 +339,51 @@ async function toggleUserDisabled(uid,disabled){try{await setDoc(doc(db,"users",
 /* ランキング: rankingドキュメントだけでなくusers/publicProfilesから表示名を補完 */
 async function loadRanking(){try{const [snap,usersSnap,profilesSnap]=await Promise.all([getDocs(collection(db,"ranking")),getDocs(collection(db,"users")),getDocs(collection(db,"publicProfiles"))]);cachedRankingUsers=new Map(usersSnap.docs.map(d=>[d.id,d.data()]));cachedProfiles=new Map(profilesSnap.docs.map(d=>[d.id,d.data()]));const arr=snap.docs.map(d=>({id:d.id,...d.data()}));arr.sort((a,b)=>(Number(b.improvementRate)||0)-(Number(a.improvementRate)||0));let visibleRank=0;$("rankingList").innerHTML=arr.map(r=>{const hidden=r.hiddenFromRanking===true;if(!hidden)visibleRank++;const uid=r.uid||r.userId||r.id;return `<div class="item"><strong>${hidden?"非表示":visibleRank+"位"} ${esc(rankingName(r))}</strong><div class="muted">改善率: ${typeof r.improvementRate==="number"?r.improvementRate.toFixed(1)+"%":"-"}</div><div class="muted">UID: ${esc(uid)}</div><div class="row" style="margin-top:8px"><span class="badge ${hidden?"expired":"active"}">${hidden?"ランキング非表示":"ランキング表示中"}</span><button class="btn secondary small" data-ranking-visibility="${esc(uid)}" data-hide="${hidden?"false":"true"}">${hidden?"ランキングに再表示":"ランキングから非表示"}</button></div></div>`}).join("")||"<div class='muted'>ランキングデータなし</div>";document.querySelectorAll("[data-ranking-visibility]").forEach(b=>b.onclick=()=>toggleRankingVisibility(b.dataset.rankingVisibility,b.dataset.hide==="true"))}catch(e){console.error("ランキング取得エラー",e);$("rankingList").innerHTML="<div class='muted'>ランキングを取得できませんでした。</div>";msg("ランキング取得に失敗しました："+e.message,"error")}}
 async function toggleRankingVisibility(uid,hide){if(!isAdmin(auth.currentUser))return;try{await setDoc(doc(db,"ranking",uid),{uid,hiddenFromRanking:hide},{merge:true});msg(hide?"ランキングから非表示にしました。":"ランキングに再表示しました。","success");await loadRanking();}catch(e){msg("ランキング表示設定の保存に失敗しました："+e.message,"error")}}
-async function loadFriendRequests(){try{const snap=await getDocs(query(collection(db,"friendRequests"),where("status","==","pending")));$("friendRequestList").innerHTML=snap.docs.map(d=>{const x=d.data();return `<div class="item"><strong>保留中</strong><div class="muted">送信者: ${esc(x.fromUid||"-")}</div><div class="muted">受信者: ${esc(x.toUid||"-")}</div><div class="muted">申請ID: ${esc(d.id)}</div></div>`}).join("")||"<div class='muted'>保留中の申請はありません。</div>"}catch(e){$("friendRequestList").innerHTML="<div class='muted'>友達申請を取得できませんでした。</div>"}}
+async function loadFriendRequests(){
+ const list=$("friendRequestList");
+ list.innerHTML='<div class="muted">申請を読み込み中...</div>';
+ try{
+  const snap=await getDocs(query(collection(db,"friendRequests"),where("status","==","pending")));
+  list.innerHTML=snap.docs.map(d=>{
+   const x=d.data(),from=x.fromUid||"",to=x.toUid||"";
+   const fromName=from?userName(from,cachedRankingUsers.get(from)||{}):"不明";
+   const toName=to?userName(to,cachedRankingUsers.get(to)||{}):"不明";
+   return `<div class="item"><strong>保留中のフレンド申請</strong>
+    <div>送信者: ${esc(fromName)}</div><div class="muted">UID: ${esc(from||"-")}</div>
+    <div>受信者: ${esc(toName)}</div><div class="muted">UID: ${esc(to||"-")}</div>
+    <div class="muted">申請ID: ${esc(d.id)}</div>
+    <div class="row" style="margin-top:10px"><button type="button" class="btn danger small" data-reject-request="${esc(d.id)}">申請を却下</button></div>
+   </div>`;
+  }).join("")||'<div class="muted">保留中の申請はありません。</div>';
+  list.querySelectorAll("[data-reject-request]").forEach(button=>{
+   button.onclick=()=>rejectFriendRequest(button.dataset.rejectRequest,button);
+  });
+ }catch(e){
+  list.innerHTML='<div class="muted">友達申請を取得できませんでした。</div>';
+  msg("友達申請の取得に失敗しました："+e.message,"error");
+ }
+}
+async function rejectFriendRequest(requestId,button){
+ if(!isAdmin(auth.currentUser))return;
+ if(!confirm("このフレンド申請を却下しますか？ この操作は取り消せません。"))return;
+ button.disabled=true;
+ try{
+  const ref=doc(db,"friendRequests",requestId);
+  const latest=await getDoc(ref);
+  if(!latest.exists()||latest.data().status!=="pending"){
+   msg("この申請はすでに処理済みか、存在しません。","error");
+  }else{
+   await updateDoc(ref,{status:"rejected",rejectedAt:serverTimestamp(),rejectedBy:auth.currentUser.uid,updatedAt:serverTimestamp()});
+   msg("フレンド申請を却下しました。","success");
+  }
+  await Promise.allSettled([loadFriendRequests(),loadDashboard()]);
+ }catch(e){
+  msg("フレンド申請の却下に失敗しました："+e.message,"error");
+  button.disabled=false;
+ }
+}
+$("reloadFriendRequests").onclick=loadFriendRequests;
+
 </script>
 </body>
 </html>
