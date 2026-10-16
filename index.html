@@ -3051,6 +3051,7 @@ function hideSleepCurtain(){
  const curtain=document.getElementById("sleepCurtain");
  curtain.classList.remove("active","blackout");
 }
+document.getElementById("sleepCurtain").addEventListener("click",e=>{if(e.target.id==="sleepCurtain"){document.getElementById("sleepCurtainStop").style.opacity="1";}});
 document.getElementById("sleepCurtainStop").addEventListener("click",()=>stopMeasurement());
 let measuring=false;
 
@@ -6467,6 +6468,8 @@ function startMotion(){
     }else{
 
 
+      sleepLastBigMove=Date.now();
+      document.getElementById("sleepCurtain").classList.remove("blackout");
       largeSeconds+=0.5;
 
 
@@ -6715,7 +6718,7 @@ async function startMeasurement(){
 
 
   measuring=true;
-
+  showSleepCurtain();
 
   measurementStart=
     Date.now();
@@ -6810,6 +6813,7 @@ function stopMeasurement(){
   if(!measuring)return;
 
   measuring=false;
+  hideSleepCurtain();
   if(measurementTimer){clearInterval(measurementTimer);measurementTimer=null;}
   stopMotion();
   stopMicrophone();
