@@ -1070,6 +1070,12 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 @keyframes rewardEnter{from{opacity:0;transform:scale(.45) translateY(70px)}to{opacity:1;transform:scale(1) translateY(0)}}@keyframes rewardSpin{to{transform:rotate(360deg)}}@keyframes rewardFloat{50%{transform:translateY(-12px)}}@keyframes rewardFall{to{transform:translateY(110vh) rotate(800deg);opacity:0}}
 @media(prefers-reduced-motion:reduce){.reward-rays,.reward-symbol,.reward-panel,.reward-confetti{animation:none!important}}
 
+/* v34 reward backgrounds */
+.extra-theme-stars .home-welcome,.extra-theme-stars #page-profile>.card:first-of-type{background:radial-gradient(ellipse at 25% 20%,#435179,#171c35 55%,#0d1120);border-color:#6577aa}
+.extra-theme-aurora .home-welcome,.extra-theme-aurora #page-profile>.card:first-of-type{background:linear-gradient(135deg,#163c38,#343267 55%,#12272e);border-color:#4fada0}
+.extra-theme-gold .home-welcome,.extra-theme-gold #page-profile>.card:first-of-type{background:linear-gradient(130deg,#473519,#242018 60%,#604520);border-color:#cfad62}
+#extraMissions .mission-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:13px 0;border-bottom:1px solid #333}
+#extraMissions .mission-row button{margin:0;min-width:100px}
 /* v32 extras */
 .extra-bars{display:flex;align-items:end;gap:5px;height:155px;padding:12px 0;border-bottom:1px solid #555}.extra-bar{flex:1;background:#8b9dd7;min-height:3px;border-radius:5px 5px 0 0;position:relative}.extra-bar span{position:absolute;bottom:-24px;left:0;right:0;text-align:center;font-size:10px;color:#aaa}.extra-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.extra-day{min-height:55px;background:#242424;color:#eee;padding:5px 2px;margin:0;font-size:12px}.extra-day.recorded{border:1px solid #9baeff}.extra-day.selected{background:#e3e9ff;color:#111}.extra-day:disabled{opacity:.25}.extra-swatch{display:inline-block;width:24px;height:24px;border-radius:6px;vertical-align:middle;margin-right:6px}.extra-theme-blue .home-welcome{border-color:#7f9fd7}.extra-theme-purple .home-welcome{border-color:#aa83d7}.extra-theme-green .home-welcome{border-color:#70ac91}
 
@@ -1088,6 +1094,17 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 .bottom-taskbar-item .taskbar-label{overflow:hidden;text-overflow:ellipsis;max-width:100%}
 @media(min-width:900px){.bottom-taskbar{width:min(780px,calc(100% - 32px));max-width:min(780px,calc(100% - 32px))}.bottom-taskbar-item{flex-basis:calc((100% - 20px)/5)}}
 @media(max-width:420px){.bottom-taskbar-item{flex-basis:calc((100% - 20px)/5);min-width:65px;font-size:9px}}
+
+/* v35: compact fixed five-item navigation, no horizontal swipe */
+.bottom-taskbar{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:2px!important;overflow:visible!important;scroll-snap-type:none!important;max-width:100%!important;justify-content:stretch!important}
+.bottom-taskbar-item{width:100%!important;min-width:0!important;max-width:none!important;flex:none!important;white-space:normal!important;min-height:52px;padding:5px 1px!important;margin:0!important}
+.bottom-taskbar-item .taskbar-label{font-size:clamp(8px,2.3vw,11px);white-space:nowrap;max-width:100%}
+@media(min-width:900px){.bottom-taskbar{width:min(650px,calc(100% - 32px))!important;max-width:min(650px,calc(100% - 32px))!important}}
+.survey-gate{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:12000;display:none;align-items:center;justify-content:center;padding:18px}
+.survey-gate.open{display:flex}
+.survey-panel{width:min(460px,100%);background:#1c1c1f;border:1px solid #777;border-radius:18px;padding:25px;text-align:center;box-shadow:0 18px 60px #0008}
+.survey-panel h2{margin:0 0 12px;font-size:22px}.survey-panel p{color:#ccc;line-height:1.8}
+.survey-panel button{width:100%;margin:8px 0 0}.survey-panel .survey-note{font-size:12px;color:#aaa}
 </style>
 </head>
 
@@ -1447,8 +1464,8 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 
 
 <div id="page-insights" class="page"><h1 class="page-title">睡眠分析レポート</h1><p class="page-description">保存済みの測定記録から集計します。推定値であり医学的な診断ではありません。</p><section class="card"><h2>最近7日間の睡眠時間</h2><div id="extraReportStats" class="notice"></div><div id="extraReportBars" class="extra-bars"></div><p class="muted">各棒は日ごとの合計測定時間です。</p></section><section class="card"><h2>睡眠カレンダー</h2><div class="row"><button class="secondary" id="extraPrevMonth">前月</button><strong id="extraMonthLabel"></strong><button class="secondary" id="extraNextMonth">次月</button></div><div id="extraCalendar" class="extra-calendar"></div><div id="extraDayDetail" class="notice" style="margin-top:14px">日付を選択してください。</div></section></div>
-<div id="page-missions" class="page"><h1 class="page-title">デイリーミッション</h1><p class="page-description">その日の記録状況に応じて進捗を確認できます。</p><section class="card"><h2>今日のミッション</h2><div id="extraMissions"></div><p class="muted">達成状況は保存済みの睡眠記録をもとに自動判定します。</p></section></div>
-<div id="page-extras" class="page"><h1 class="page-title">通知・カスタマイズ</h1><section class="card"><h2>プロフィール背景</h2><p class="muted">この端末で表示するホーム画面のアクセントを選べます。</p><select id="extraTheme"><option value="default">標準</option><option value="blue">ブルー</option><option value="purple">パープル</option><option value="green">グリーン</option></select></section><section class="card"><h2>就寝リマインダー</h2><p class="muted">ページを開いている間、指定時刻になると画面内でお知らせします。ブラウザを閉じている間のプッシュ通知には対応していません。</p><label for="extraReminder">お知らせ時刻</label><input type="time" id="extraReminder" value="22:00"><label class="check"><input type="checkbox" id="extraReminderEnabled"> リマインダーを有効にする</label><div id="extraReminderStatus" class="notice"></div></section></div>
+<div id="page-missions" class="page"><h1 class="page-title">デイリーミッション</h1><p class="page-description">その日の記録状況に応じて進捗を確認できます。</p><section class="card"><h2>今日のミッション</h2><div id="extraMissions"></div><div id="missionClaimStatus" class="notice" aria-live="polite">達成したミッションの報酬を受け取れます。</div><p class="muted">達成状況は保存済みの睡眠記録をもとに自動判定します。</p></section></div>
+<div id="page-extras" class="page"><h1 class="page-title">通知・カスタマイズ</h1><section class="card"><h2>プロフィール背景</h2><p class="muted">この端末で表示するホーム画面のアクセントを選べます。</p><div id="backgroundUnlockInfo" class="notice"></div><select id="extraTheme"><option value="default">標準</option><option value="blue">ブルー</option><option value="purple">パープル</option><option value="green">グリーン</option><option value="stars">星空（実績3個）</option><option value="aurora">オーロラ（実績6個）</option><option value="gold">ゴールド（実績10個）</option></select></section><section class="card"><h2>就寝リマインダー</h2><p class="muted">ページを開いている間、指定時刻になると画面内でお知らせします。ブラウザを閉じている間のプッシュ通知には対応していません。</p><label for="extraReminder">お知らせ時刻</label><input type="time" id="extraReminder" value="22:00"><label class="check"><input type="checkbox" id="extraReminderEnabled"> リマインダーを有効にする</label><div id="extraReminderStatus" class="notice"></div></section></div>
 
 <!-- =========================
      MEASURE
@@ -2761,18 +2778,24 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 
 
 
+
+<div id="surveyGate" class="survey-gate" role="dialog" aria-modal="true" aria-labelledby="surveyTitle">
+ <div class="survey-panel">
+  <h2 id="surveyTitle">アンケートにご協力ください</h2>
+  <p>睡眠測定が完了しました。学校公開でのアプリ改善のため、アンケートページをご確認ください。</p>
+  <button id="surveyOpenBtn" type="button">アンケートページを開く ↗</button>
+  <button id="surveyContinueBtn" class="secondary" type="button" disabled>アプリに戻る</button>
+  <p id="surveyGateStatus" class="survey-note" aria-live="polite">アンケートページを開くと戻れるようになります。</p>
+  <p class="survey-note">回答は任意です。リンクを開いた後は回答しなくても戻れます。</p>
+ </div>
+</div>
+
 <nav id="bottomTaskbar" class="bottom-taskbar" aria-label="メインナビゲーション">
-  <button type="button" class="bottom-taskbar-item active" data-page="home" aria-label="ホーム"><span class="taskbar-icon" aria-hidden="true">⌂</span><span class="taskbar-label">ホーム</span></button>
-  <button type="button" class="bottom-taskbar-item" data-page="measure" aria-label="測定"><span class="taskbar-icon" aria-hidden="true">◉</span><span class="taskbar-label">測定</span></button>
-  <button type="button" class="bottom-taskbar-item" data-page="insights" aria-label="分析・カレンダー"><span class="taskbar-icon" aria-hidden="true">▥</span><span class="taskbar-label">分析・カレンダー</span></button>
-  <button type="button" class="bottom-taskbar-item" data-page="missions" aria-label="ミッション"><span class="taskbar-icon" aria-hidden="true">✓</span><span class="taskbar-label">ミッション</span></button>
-  <button type="button" class="bottom-taskbar-item" data-page="ranking" aria-label="ランキング"><span class="taskbar-icon" aria-hidden="true">♛</span><span class="taskbar-label">ランキング</span></button>
-  <button type="button" class="bottom-taskbar-item" data-page="friends" aria-label="フレンド"><span class="taskbar-icon" aria-hidden="true">♧</span><span class="taskbar-label">フレンド</span></button>
-  <button type="button" class="bottom-taskbar-item" data-page="history" aria-label="履歴"><span class="taskbar-icon" aria-hidden="true">▤</span><span class="taskbar-label">履歴</span></button>
-  <button type="button" class="bottom-taskbar-item" data-page="achievements" aria-label="実績"><span class="taskbar-icon" aria-hidden="true">★</span><span class="taskbar-label">実績</span></button>
-  <button type="button" class="bottom-taskbar-item" data-page="profile" aria-label="マイページ"><span class="taskbar-icon" aria-hidden="true">●</span><span class="taskbar-label">マイページ</span></button>
-  <button type="button" class="bottom-taskbar-item" data-page="extras" aria-label="通知・外観"><span class="taskbar-icon" aria-hidden="true">◷</span><span class="taskbar-label">通知・外観</span></button>
-  <button type="button" class="bottom-taskbar-item" data-page="settings" aria-label="設定"><span class="taskbar-icon" aria-hidden="true">⚙</span><span class="taskbar-label">設定</span></button>
+  <button type="button" class="bottom-taskbar-item active" data-page="home" aria-label="ホーム"><span class="taskbar-icon">⌂</span><span class="taskbar-label">ホーム</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="measure" aria-label="測定"><span class="taskbar-icon">◉</span><span class="taskbar-label">測定</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="insights" aria-label="分析"><span class="taskbar-icon">▥</span><span class="taskbar-label">分析</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="missions" aria-label="ミッション"><span class="taskbar-icon">✓</span><span class="taskbar-label">ミッション</span></button>
+  <button type="button" class="bottom-taskbar-item" data-page="profile" aria-label="マイページ"><span class="taskbar-icon">●</span><span class="taskbar-label">マイページ</span></button>
 </nav>
 
 <script type="module">
@@ -2804,7 +2827,8 @@ import {
   query,
   where,
   serverTimestamp,
-  Timestamp
+  Timestamp,
+  runTransaction
 }
 from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
@@ -2933,7 +2957,8 @@ let data={
 
 
   lastAnalysis:null,
-  lastResetAt:0
+  lastResetAt:0,
+  missionClaims:{}
 
 
 };
@@ -2977,7 +3002,7 @@ function updateAccessUI(){
   const start=document.getElementById("startBtn");
   if(start&&!measuring)start.disabled=!hasAccess();
 }
-async function ensureAccessGrant(){accessChecked=false;accessGrant=null;updateAccessUI();if(!currentUser)return;const admin=isAdminUser();const ref=doc(db,'accessGrants',currentUser.uid);try{let snap=await getDoc(ref);if(!snap.exists()&&!admin){const now=Date.now();try{await setDoc(ref,{uid:currentUser.uid,unlimited:false,createdAt:serverTimestamp(),expiresAt:Timestamp.fromMillis(now+ACCESS_DAYS*86400000-60000)});}catch(e){console.warn('Trial creation:',e);}snap=await getDoc(ref);}accessGrant=snap.exists()?snap.data():null;}catch(e){console.error('Access check failed:',e);}finally{accessChecked=true;updateAccessUI();}}
+async function ensureAccessGrant(){accessChecked=false;accessGrant=null;updateAccessUI();if(!currentUser)return;const admin=isAdminUser();const ref=doc(db,'accessGrants',currentUser.uid);try{let snap=await getDoc(ref);if(!snap.exists()&&!admin){const now=Date.now();try{await setDoc(ref,{uid:currentUser.uid,unlimited:false,createdAt:serverTimestamp(),expiresAt:Timestamp.fromMillis(now+ACCESS_DAYS*86400000)});}catch(e){console.warn('Trial creation:',e);}snap=await getDoc(ref);}accessGrant=snap.exists()?snap.data():null;}catch(e){console.error('Access check failed:',e);}finally{accessChecked=true;updateAccessUI();}}
 
 
 
@@ -3121,9 +3146,6 @@ function showPage(pageName){
       const active=item.dataset.page===pageName;
       item.classList.toggle("active",active);
       item.setAttribute("aria-current",active?"page":"false");
-      if(active && item.closest("#bottomTaskbar")){
-        requestAnimationFrame(()=>item.scrollIntoView({behavior:"smooth",block:"nearest",inline:"nearest"}));
-      }
     });
 
 
@@ -3277,6 +3299,7 @@ function loadLocal(){
 
     data.lastResetAt=
       Number(parsed.lastResetAt)||0;
+    data.missionClaims=(parsed.missionClaims&&typeof parsed.missionClaims==="object")?parsed.missionClaims:{};
 
     data.xp=
       Number(parsed.xp)||0;
@@ -3732,6 +3755,7 @@ async function saveToFirestore(){
 
 
         xp:data.xp,
+        missionClaims:data.missionClaims||{},
 
 
         lastXPGain:data.lastXPGain,
@@ -3862,6 +3886,7 @@ async function loadFromFirestore(){
 
     if(remoteResetAt>(Number(data.lastResetAt)||0)){
       data.xp=0;
+      data.missionClaims={};
       data.lastXPGain=0;
       data.history=[];
       data.achievements=[];
@@ -3929,6 +3954,7 @@ async function loadFromFirestore(){
     }
 
 
+    data.missionClaims={...(data.missionClaims||{}),...(remote.missionClaims||{})};
     data.xp=Math.max(
       Number(data.xp)||0,
       Number(remote.xp)||0
@@ -7023,6 +7049,7 @@ function calculateResult(){
     "measure"
   );
 
+  showSurveyGate();
 
 }
 
@@ -10136,6 +10163,7 @@ document
 
 
         xp:0,
+        missionClaims:{},
 
 
         lastXPGain:0,
@@ -10236,6 +10264,7 @@ document
 
 
               xp:0,
+              missionClaims:{},
 
 
               lastXPGain:0,
@@ -10793,14 +10822,99 @@ let extraMonth=new Date();extraMonth.setDate(1);
 function extraRecords(){return (Array.isArray(data.history)?data.history:[]).map(x=>{const d=new Date(x.timestamp||x.date||0);return {...x,_date:d};}).filter(x=>Number.isFinite(x._date.getTime())&&x._date.getFullYear()>2000)}
 function extraDateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function extraHours(x){return Math.max(0,Number(x.durationHours??(x.durationMs!=null?Number(x.durationMs)/3600000:null)??x.duration_hours??x.duration??0)||0)}
-function extraRender(){const records=extraRecords(),today=new Date(),keys=Array.from({length:7},(_,i)=>{let d=new Date(today.getFullYear(),today.getMonth(),today.getDate()-6+i);return d});let totals=keys.map(d=>records.filter(x=>extraDateKey(x._date)===extraDateKey(d)).reduce((a,x)=>a+extraHours(x),0));const sum=totals.reduce((a,b)=>a+b,0),days=totals.filter(v=>v>0).length;document.getElementById('extraReportStats').textContent=`記録のある日：${days}日 / 7日　合計測定時間：${sum.toFixed(1)}時間　記録日の平均：${days?(sum/days).toFixed(1):'--'}時間`;const max=Math.max(1,...totals);document.getElementById('extraReportBars').innerHTML=totals.map((v,i)=>`<div class="extra-bar" style="height:${Math.max(2,v/max*100)}%" title="${v.toFixed(1)}時間"><span>${keys[i].getMonth()+1}/${keys[i].getDate()}</span></div>`).join('');const y=extraMonth.getFullYear(),m=extraMonth.getMonth();document.getElementById('extraMonthLabel').textContent=`${y}年${m+1}月`;const first=new Date(y,m,1).getDay(),count=new Date(y,m+1,0).getDate();let html=['日','月','火','水','木','金','土'].map(x=>`<div style="text-align:center;color:#aaa">${x}</div>`).join('');for(let i=0;i<first;i++)html+='<div></div>';for(let day=1;day<=count;day++){const key=extraDateKey(new Date(y,m,day)),n=records.filter(x=>extraDateKey(x._date)===key).length;html+=`<button class="extra-day ${n?'recorded':''}" data-extra-day="${key}">${day}${n?`<small style="display:block">${n}件</small>`:''}</button>`}document.getElementById('extraCalendar').innerHTML=html;document.querySelectorAll('[data-extra-day]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-extra-day]').forEach(z=>z.classList.remove('selected'));b.classList.add('selected');const rows=records.filter(x=>extraDateKey(x._date)===b.dataset.extraDay);document.getElementById('extraDayDetail').textContent=rows.length?`${b.dataset.extraDay}：${rows.length}回の測定、合計${rows.reduce((a,x)=>a+extraHours(x),0).toFixed(1)}時間、スコア ${rows.map(x=>x.score??'--').join(' / ')}`:`${b.dataset.extraDay}：記録なし`});const todayCount=records.filter(x=>extraDateKey(x._date)===extraDateKey(today)).length;const streak=typeof calculateStreak==='function'?calculateStreak():0;document.getElementById('extraMissions').innerHTML=[['今日の測定を1回記録',todayCount>=1,`${todayCount}/1回`],['今日の測定を2回記録',todayCount>=2,`${Math.min(todayCount,2)}/2回`],['3日連続で記録',streak>=3,`${streak}/3日`]].map(([label,done,progress])=>`<div class="analysis-item"><strong>${done?'✓ ':'○ '}${label}</strong><div class="muted">${progress} ・ ${done?'達成':'進行中'}</div></div>`).join('')}
+function extraRender(){const records=extraRecords(),today=new Date(),keys=Array.from({length:7},(_,i)=>{let d=new Date(today.getFullYear(),today.getMonth(),today.getDate()-6+i);return d});let totals=keys.map(d=>records.filter(x=>extraDateKey(x._date)===extraDateKey(d)).reduce((a,x)=>a+extraHours(x),0));const sum=totals.reduce((a,b)=>a+b,0),days=totals.filter(v=>v>0).length;document.getElementById('extraReportStats').textContent=`記録のある日：${days}日 / 7日　合計測定時間：${sum.toFixed(1)}時間　記録日の平均：${days?(sum/days).toFixed(1):'--'}時間`;const max=Math.max(1,...totals);document.getElementById('extraReportBars').innerHTML=totals.map((v,i)=>`<div class="extra-bar" style="height:${Math.max(2,v/max*100)}%" title="${v.toFixed(1)}時間"><span>${keys[i].getMonth()+1}/${keys[i].getDate()}</span></div>`).join('');const y=extraMonth.getFullYear(),m=extraMonth.getMonth();document.getElementById('extraMonthLabel').textContent=`${y}年${m+1}月`;const first=new Date(y,m,1).getDay(),count=new Date(y,m+1,0).getDate();let html=['日','月','火','水','木','金','土'].map(x=>`<div style="text-align:center;color:#aaa">${x}</div>`).join('');for(let i=0;i<first;i++)html+='<div></div>';for(let day=1;day<=count;day++){const key=extraDateKey(new Date(y,m,day)),n=records.filter(x=>extraDateKey(x._date)===key).length;html+=`<button class="extra-day ${n?'recorded':''}" data-extra-day="${key}">${day}${n?`<small style="display:block">${n}件</small>`:''}</button>`}document.getElementById('extraCalendar').innerHTML=html;document.querySelectorAll('[data-extra-day]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-extra-day]').forEach(z=>z.classList.remove('selected'));b.classList.add('selected');const rows=records.filter(x=>extraDateKey(x._date)===b.dataset.extraDay);document.getElementById('extraDayDetail').textContent=rows.length?`${b.dataset.extraDay}：${rows.length}回の測定、合計${rows.reduce((a,x)=>a+extraHours(x),0).toFixed(1)}時間、スコア ${rows.map(x=>x.score??'--').join(' / ')}`:`${b.dataset.extraDay}：記録なし`});extraRenderMissions(records,today);
+}
 document.getElementById('extraPrevMonth').onclick=()=>{extraMonth.setMonth(extraMonth.getMonth()-1);extraRender()};document.getElementById('extraNextMonth').onclick=()=>{extraMonth.setMonth(extraMonth.getMonth()+1);extraRender()};
 function extraSettingKey(){return 'nsnl-extra-'+(currentUser?.uid||'guest')}
-function extraLoadSettings(){let x={};try{x=JSON.parse(localStorage.getItem(extraSettingKey())||'{}')}catch(e){}document.getElementById('extraTheme').value=x.theme||'default';document.getElementById('extraReminder').value=x.time||'22:00';document.getElementById('extraReminderEnabled').checked=!!x.enabled;extraApplySettings()}
-function extraApplySettings(){const theme=document.getElementById('extraTheme').value;document.body.classList.remove('extra-theme-blue','extra-theme-purple','extra-theme-green');if(theme!=='default')document.body.classList.add('extra-theme-'+theme);const enabled=document.getElementById('extraReminderEnabled').checked,time=document.getElementById('extraReminder').value;document.getElementById('extraReminderStatus').textContent=enabled?`毎日 ${time} にページ内でお知らせします（ページ表示中のみ）。`:'リマインダーはオフです。'}
+const V34_MISSIONS=[{id:'one',name:'今日の測定を1回記録',target:1,xp:15},{id:'two',name:'今日の測定を2回記録',target:2,xp:25},{id:'streak',name:'3日連続で記録',target:3,xp:30}];
+function v34MissionState(records=extraRecords(),today=new Date()){
+ const key=extraDateKey(today),todayCount=records.filter(x=>extraDateKey(x._date)===key).length;
+ const streak=calculateStreak();return V34_MISSIONS.map(m=>({...m,progress:m.id==='streak'?streak:todayCount,claimKey:key+'_'+m.id}));
+}
+function extraRenderMissions(records=extraRecords(),today=new Date()){
+ const claims=data.missionClaims||{};
+ document.getElementById('extraMissions').innerHTML=v34MissionState(records,today).map(m=>{
+ const done=m.progress>=m.target,claimed=!!claims[m.claimKey];
+ return `<div class="mission-row"><div><strong>${done?'✓':'○'} ${m.name}</strong><div class="muted">${Math.min(m.progress,m.target)}/${m.target} ・ 報酬 ${m.xp} XP</div></div><button type="button" class="${done&&!claimed?'':'secondary'}" data-claim-mission="${m.id}" ${!done||claimed?'disabled':''}>${claimed?'受取済み':done?'受け取る':'未達成'}</button></div>`;
+ }).join('');
+ document.querySelectorAll('[data-claim-mission]').forEach(b=>b.onclick=()=>v34ClaimMission(b.dataset.claimMission));
+}
+let v34ClaimBusy=false;
+async function v34ClaimMission(id){
+ const status=document.getElementById('missionClaimStatus');
+ if(v34ClaimBusy)return;
+ if(!currentUser||!hasAccess()){status.textContent='XP報酬を受け取るには有効なアカウントでログインしてください。';return;}
+ const mission=v34MissionState().find(m=>m.id===id);
+ if(!mission||mission.progress<mission.target){status.textContent='ミッションがまだ達成されていません。';return;}
+ if(data.missionClaims?.[mission.claimKey]){status.textContent='この報酬は受取済みです。';return;}
+ v34ClaimBusy=true;status.textContent='報酬を保存しています…';
+ try{
+   const userRef=doc(db,'users',currentUser.uid);
+   const result=await runTransaction(db,async tx=>{
+     const snap=await tx.get(userRef),remote=snap.exists()?snap.data():{};
+     const claims=remote.missionClaims||{};
+     if(claims[mission.claimKey])return {claimed:false,xp:Number(remote.xp)||0,claims};
+     const xp=Math.max(Number(remote.xp)||0,Number(data.xp)||0)+mission.xp;
+     const updated={...claims,[mission.claimKey]:true};
+     tx.set(userRef,{xp,missionClaims:updated,updatedAt:serverTimestamp()},{merge:true});
+     return {claimed:true,xp,claims:updated};
+   });
+   data.xp=Math.max(Number(data.xp)||0,result.xp);
+   data.missionClaims={...(data.missionClaims||{}),...result.claims};
+   if(result.claimed)data.lastXPGain=mission.xp;
+   saveLocal();updateAllUI();extraRender();
+   status.textContent=result.claimed?`${mission.xp} XPを獲得しました！`:'この報酬はすでに受け取っています。';
+   try{await updateRanking()}catch(e){console.warn('ランキング更新:',e)}
+ }catch(e){console.error('ミッション報酬:',e);status.textContent='保存に失敗しました。通信状態やFirestoreの権限を確認して再試行してください。';}
+ finally{v34ClaimBusy=false;}
+}
+function v34UnlockedThemes(){const count=new Set(Array.isArray(data.achievements)?data.achievements:[]).size;return {default:true,blue:true,purple:true,green:true,stars:count>=3,aurora:count>=6,gold:count>=10};}
+function v34UpdateThemeOptions(){const allowed=v34UnlockedThemes(),count=new Set(data.achievements||[]).size;
+ const select=document.getElementById('extraTheme');
+ for(const option of select.options){option.disabled=!allowed[option.value];}
+ document.getElementById('backgroundUnlockInfo').textContent=`獲得実績 ${count}個。星空：3個、オーロラ：6個、ゴールド：10個で解放されます。`;
+ if(!allowed[select.value])select.value='default';
+}
+function extraLoadSettings(){let x={};try{x=JSON.parse(localStorage.getItem(extraSettingKey())||'{}')}catch(e){}document.getElementById('extraTheme').value=x.theme||'default';document.getElementById('extraReminder').value=x.time||'22:00';document.getElementById('extraReminderEnabled').checked=!!x.enabled;v34UpdateThemeOptions();extraApplySettings()}
+function extraApplySettings(){const theme=document.getElementById('extraTheme').value;v34UpdateThemeOptions();document.body.classList.remove('extra-theme-blue','extra-theme-purple','extra-theme-green','extra-theme-stars','extra-theme-aurora','extra-theme-gold');if(theme!=='default'&&v34UnlockedThemes()[theme])document.body.classList.add('extra-theme-'+theme);const enabled=document.getElementById('extraReminderEnabled').checked,time=document.getElementById('extraReminder').value;document.getElementById('extraReminderStatus').textContent=enabled?`毎日 ${time} にページ内でお知らせします（ページ表示中のみ）。`:'リマインダーはオフです。'}
 for(const id of ['extraTheme','extraReminder','extraReminderEnabled'])document.getElementById(id).addEventListener('change',()=>{localStorage.setItem(extraSettingKey(),JSON.stringify({theme:document.getElementById('extraTheme').value,time:document.getElementById('extraReminder').value,enabled:document.getElementById('extraReminderEnabled').checked}));extraApplySettings()});
 let extraLastNotice='';setInterval(()=>{const enabled=document.getElementById('extraReminderEnabled').checked;if(!enabled)return;const now=new Date(),hhmm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),key=extraDateKey(now)+' '+hhmm;if(hhmm===document.getElementById('extraReminder').value&&extraLastNotice!==key){extraLastNotice=key;document.getElementById('extraReminderStatus').textContent='そろそろ就寝予定時刻です。睡眠の準備をしましょう。'}},30000);
 const extraOldShowPage=showPage;showPage=function(name){extraOldShowPage(name);if(name==='insights'||name==='missions')extraRender();if(name==='extras')extraLoadSettings()};
+
+
+/* v35: school open-day survey link gate.
+   Replace the URL below with the published questionnaire URL (https://...).
+   This checks only that the link was opened, not whether a form was submitted. */
+const SCHOOL_SURVEY_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdzQgxNbYWYaMxVs0SxRvPb6bWfPV2ZepVKj7h1oAyjWQZFkw/viewform";
+function surveyPendingKey(){return 'nsnl-survey-pending-'+(currentUser?.uid||'guest');}
+function showSurveyGate(){
+  const gate=document.getElementById('surveyGate');
+  if(!gate)return;
+  const configured=/^https:\/\/[^\s]+$/i.test(SCHOOL_SURVEY_URL);
+  document.getElementById('surveyOpenBtn').disabled=!configured;
+  document.getElementById('surveyContinueBtn').disabled=true;
+  document.getElementById('surveyGateStatus').textContent=configured?'アンケートページを開くと、アプリに戻れるようになります。':'アンケートURLが未設定です。管理者がURLを設定するまで、この案内は表示のみとなります。';
+  if(!configured)return; // do not lock users out if the URL was not configured
+  localStorage.setItem(surveyPendingKey(),'1');
+  gate.classList.add('open');
+}
+document.getElementById('surveyOpenBtn').addEventListener('click',()=>{
+  if(!/^https:\/\/[^\s]+$/i.test(SCHOOL_SURVEY_URL))return;
+  const opened=window.open(SCHOOL_SURVEY_URL,'_blank');
+  if(!opened){ // popup blockers: navigate current tab, pending state survives
+    window.location.href=SCHOOL_SURVEY_URL;
+    return;
+  }
+  opened.opener=null;
+  document.getElementById('surveyContinueBtn').disabled=false;
+  document.getElementById('surveyGateStatus').textContent='アンケートページを開きました。戻る場合は下のボタンを押してください。';
+});
+document.getElementById('surveyContinueBtn').addEventListener('click',()=>{
+  localStorage.removeItem(surveyPendingKey());
+  document.getElementById('surveyGate').classList.remove('open');
+});
+// Restore gate on reload. The survey URL must be configured for gating.
+if(/^https:\/\/[^\s]+$/i.test(SCHOOL_SURVEY_URL) && localStorage.getItem(surveyPendingKey())==='1')showSurveyGate();
 
 /* =========================
    INIT
