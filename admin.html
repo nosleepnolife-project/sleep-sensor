@@ -88,7 +88,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid #8297e8;outline-offset
 <div id="adminContent"><div id="message" class="notice hidden"></div>
 <section id="dashboardSection" class="card"><div class="section-heading"><div><span class="eyebrow">OVERVIEW</span><h2>管理者ホーム</h2><p class="section-subtitle">アプリ全体の利用状況を確認できます。</p></div><button id="reloadDashboard" class="btn secondary">再読み込み</button></div><div class="grid">
 <div class="stat"><div class="label">ユーザー数</div><div id="userCount" class="value">-</div></div><div class="stat"><div class="label">測定数</div><div id="measurementCount" class="value">-</div></div><div class="stat"><div class="label">今日の測定</div><div id="todayCount" class="value">-</div></div><div class="stat"><div class="label">平均スコア</div><div id="avgScore" class="value">-</div></div><div class="stat"><div class="label">平均改善率</div><div id="avgImprovement" class="value">-</div></div><div class="stat"><div class="label">ランキング登録</div><div id="rankingCount" class="value">-</div></div><div class="stat"><div class="label">保留中の友達申請</div><div id="pendingCount" class="value">-</div></div><div class="stat"><div class="label">公開お知らせ</div><div id="announcementCount" class="value">-</div></div><div class="stat"><div class="label">有効な利用者</div><div id="activeAccessCount" class="value">-</div></div><div class="stat"><div class="label">期限切れ</div><div id="expiredAccessCount" class="value">-</div></div><div class="stat"><div class="label">期限未設定</div><div id="unassignedAccessCount" class="value">-</div></div></div></section>
-<section id="analyticsSection" class="card"><h2>利用状況分析（直近7日間）</h2><div id="adminAnalytics" class="notice">読み込み中...</div><div id="adminAnalyticsBars" style="display:flex;align-items:end;gap:8px;height:170px;border-bottom:1px solid #555;margin:24px 0 34px"></div><p class="muted">測定データの記録日時をもとに日別測定件数を集計します。</p></section>
+<section id="analyticsSection" class="card"><h2>利用状況分析（直近7日間）</h2><div id="adminAnalytics" class="notice">読み込み中...</div><h3>今日の測定利用者</h3><div id="todayMeasuringUsers" class="notice">読み込み中...</div><div id="adminAnalyticsBars" style="display:flex;align-items:end;gap:8px;height:170px;border-bottom:1px solid #555;margin:24px 0 34px"></div><p class="muted">測定データの記録日時をもとに日別測定件数を集計します。</p></section>
 <section id="accessSection" class="card"><div class="section-heading"><div><span class="eyebrow">ACCOUNTS</span><h2>すべてのアカウント</h2><p class="section-subtitle">アカウントを検索し、詳細確認や利用期限の管理を行います。</p></div></div><p class="muted">ユーザーを確認し、「詳細を見る」からプロフィール・測定履歴・実績などを確認できます。</p><p class="notice">利用期限はFirestoreの accessGrants コレクションに保存します。新規ユーザーの初回7日間付与は利用者ページ側で行います。管理者はここから期限の延長や無期限設定ができます。</p>
 <div class="row"><input id="accessSearch" placeholder="UID・ニックネーム・フレンドIDで検索"><button id="accessSearchBtn" class="btn">検索</button><button id="accessReloadBtn" class="btn secondary">一覧更新</button></div>
 <div class="row" style="margin-top:12px"><button id="grantExistingBtn" class="btn secondary">期限未設定の既存ユーザーに7日間付与</button></div><p class="muted">一括付与は、まだ利用期限が登録されていないユーザーだけが対象です。すでに設定された期限は変更しません。</p><div id="accessSummary" class="muted">読み込み中...</div><div id="accessList"></div></section>
@@ -160,6 +160,16 @@ async function loadDashboard(){
   const last7=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return {key:dayKey(d),label:`${d.getMonth()+1}/${d.getDate()}`}});
   const vals=last7.map(d=>daily.get(d.key)||0),max=Math.max(1,...vals);
   today=daily.get(dayKey(start))||0;
+  const todays=[...(dailyUsers.get(dayKey(start))||new Set())];
+  const profilesSnap=await getDocs(collection(db,"publicProfiles"));
+  const profilesById=new Map(profilesSnap.docs.map(d=>[d.id,d.data()]));
+  const usersById=new Map(usersSnap.docs.map(d=>[d.id,d.data()]));
+  $("todayMeasuringUsers").innerHTML=todays.length?todays.map(uid=>{
+   const user=usersById.get(uid)||{},pub=profilesById.get(uid)||{};
+   const name=user.rankingName||pub.rankingName||user.displayName||pub.displayName||user.name||pub.name||"名前未設定";
+    return `<div class="item"><strong>${esc(name)}</strong><div class="muted">メール: ${esc(user.email||pub.email||"未登録")}</div><div class="muted">UID: ${esc(uid)}</div><button class="btn secondary small" data-today-detail="${esc(uid)}">詳細を見る</button></div>`;
+  }).join(""):'<div class="muted">今日の測定利用者はいません。</div>';
+  document.querySelectorAll("[data-today-detail]").forEach(b=>b.onclick=()=>showUserDetail(b.dataset.todayDetail));
   $("adminAnalytics").textContent=`直近7日間の測定：${vals.reduce((a,b)=>a+b,0)}件 ／ 今日の測定：${today}件 ／ 今日の測定利用者：${(dailyUsers.get(last7[6].key)||new Set()).size}人`;
   $("adminAnalyticsBars").innerHTML=last7.map((d,i)=>`<div title="${vals[i]}件" style="flex:1;height:${Math.max(2,vals[i]/max*100)}%;background:#a4b4ed;position:relative;border-radius:6px 6px 0 0"><span style="position:absolute;bottom:-24px;left:0;right:0;text-align:center;font-size:11px;color:#aaa">${d.label}</span></div>`).join("");
   $("userCount").textContent=usersSnap.size;$("measurementCount").textContent=total;$("todayCount").textContent=today;
