@@ -1069,6 +1069,9 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 .reward-heading{font-size:12px;letter-spacing:5px;color:#f3d98e;font-weight:900}.reward-symbol{font-size:84px;filter:drop-shadow(0 0 24px #e4b64f);animation:rewardFloat 2s ease-in-out infinite}.reward-name{font-size:30px;font-weight:900;color:#ffe8a5}.reward-description{color:#ddd;margin:10px 0}.reward-gift{background:#302713;border:1px solid #a58444;padding:13px;border-radius:12px;color:#f6d78c;margin:18px 0}.reward-confetti{position:absolute;width:8px;height:16px;top:-30px;background:#e6c36d;animation:rewardFall 3s linear forwards;pointer-events:none}
 @keyframes rewardEnter{from{opacity:0;transform:scale(.45) translateY(70px)}to{opacity:1;transform:scale(1) translateY(0)}}@keyframes rewardSpin{to{transform:rotate(360deg)}}@keyframes rewardFloat{50%{transform:translateY(-12px)}}@keyframes rewardFall{to{transform:translateY(110vh) rotate(800deg);opacity:0}}
 @media(prefers-reduced-motion:reduce){.reward-rays,.reward-symbol,.reward-panel,.reward-confetti{animation:none!important}}
+
+/* v32 extras */
+.extra-bars{display:flex;align-items:end;gap:5px;height:155px;padding:12px 0;border-bottom:1px solid #555}.extra-bar{flex:1;background:#8b9dd7;min-height:3px;border-radius:5px 5px 0 0;position:relative}.extra-bar span{position:absolute;bottom:-24px;left:0;right:0;text-align:center;font-size:10px;color:#aaa}.extra-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.extra-day{min-height:55px;background:#242424;color:#eee;padding:5px 2px;margin:0;font-size:12px}.extra-day.recorded{border:1px solid #9baeff}.extra-day.selected{background:#e3e9ff;color:#111}.extra-day:disabled{opacity:.25}.extra-swatch{display:inline-block;width:24px;height:24px;border-radius:6px;vertical-align:middle;margin-right:6px}.extra-theme-blue .home-welcome{border-color:#7f9fd7}.extra-theme-purple .home-welcome{border-color:#aa83d7}.extra-theme-green .home-welcome{border-color:#70ac91}
 </style>
 </head>
 
@@ -1147,6 +1150,9 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
     </button>
 
 
+<button class="menu-item" data-page="insights"><span class="menu-icon">▥</span><span>分析・カレンダー</span></button>
+<button class="menu-item" data-page="missions"><span class="menu-icon">✓</span><span>デイリーミッション</span></button>
+<button class="menu-item" data-page="extras"><span class="menu-icon">◷</span><span>通知・カスタマイズ</span></button>
   </nav>
 </aside>
 
@@ -1422,6 +1428,11 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 
 
 
+
+
+<div id="page-insights" class="page"><h1 class="page-title">睡眠分析レポート</h1><p class="page-description">保存済みの測定記録から集計します。推定値であり医学的な診断ではありません。</p><section class="card"><h2>最近7日間の睡眠時間</h2><div id="extraReportStats" class="notice"></div><div id="extraReportBars" class="extra-bars"></div><p class="muted">各棒は日ごとの合計測定時間です。</p></section><section class="card"><h2>睡眠カレンダー</h2><div class="row"><button class="secondary" id="extraPrevMonth">前月</button><strong id="extraMonthLabel"></strong><button class="secondary" id="extraNextMonth">次月</button></div><div id="extraCalendar" class="extra-calendar"></div><div id="extraDayDetail" class="notice" style="margin-top:14px">日付を選択してください。</div></section></div>
+<div id="page-missions" class="page"><h1 class="page-title">デイリーミッション</h1><p class="page-description">その日の記録状況に応じて進捗を確認できます。</p><section class="card"><h2>今日のミッション</h2><div id="extraMissions"></div><p class="muted">達成状況は保存済みの睡眠記録をもとに自動判定します。</p></section></div>
+<div id="page-extras" class="page"><h1 class="page-title">通知・カスタマイズ</h1><section class="card"><h2>プロフィール背景</h2><p class="muted">この端末で表示するホーム画面のアクセントを選べます。</p><select id="extraTheme"><option value="default">標準</option><option value="blue">ブルー</option><option value="purple">パープル</option><option value="green">グリーン</option></select></section><section class="card"><h2>就寝リマインダー</h2><p class="muted">ページを開いている間、指定時刻になると画面内でお知らせします。ブラウザを閉じている間のプッシュ通知には対応していません。</p><label for="extraReminder">お知らせ時刻</label><input type="time" id="extraReminder" value="22:00"><label class="check"><input type="checkbox" id="extraReminderEnabled"> リマインダーを有効にする</label><div id="extraReminderStatus" class="notice"></div></section></div>
 
 <!-- =========================
      MEASURE
@@ -10760,6 +10771,21 @@ function escapeHTML(str){
 
 
 
+
+
+/* v32: additive reports, calendar, missions, local settings */
+let extraMonth=new Date();extraMonth.setDate(1);
+function extraRecords(){return (Array.isArray(data.history)?data.history:[]).map(x=>{const d=new Date(x.timestamp||x.date||0);return {...x,_date:d};}).filter(x=>Number.isFinite(x._date.getTime())&&x._date.getFullYear()>2000)}
+function extraDateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function extraHours(x){return Math.max(0,Number(x.durationHours??(x.durationMs!=null?Number(x.durationMs)/3600000:null)??x.duration_hours??x.duration??0)||0)}
+function extraRender(){const records=extraRecords(),today=new Date(),keys=Array.from({length:7},(_,i)=>{let d=new Date(today.getFullYear(),today.getMonth(),today.getDate()-6+i);return d});let totals=keys.map(d=>records.filter(x=>extraDateKey(x._date)===extraDateKey(d)).reduce((a,x)=>a+extraHours(x),0));const sum=totals.reduce((a,b)=>a+b,0),days=totals.filter(v=>v>0).length;document.getElementById('extraReportStats').textContent=`記録のある日：${days}日 / 7日　合計測定時間：${sum.toFixed(1)}時間　記録日の平均：${days?(sum/days).toFixed(1):'--'}時間`;const max=Math.max(1,...totals);document.getElementById('extraReportBars').innerHTML=totals.map((v,i)=>`<div class="extra-bar" style="height:${Math.max(2,v/max*100)}%" title="${v.toFixed(1)}時間"><span>${keys[i].getMonth()+1}/${keys[i].getDate()}</span></div>`).join('');const y=extraMonth.getFullYear(),m=extraMonth.getMonth();document.getElementById('extraMonthLabel').textContent=`${y}年${m+1}月`;const first=new Date(y,m,1).getDay(),count=new Date(y,m+1,0).getDate();let html=['日','月','火','水','木','金','土'].map(x=>`<div style="text-align:center;color:#aaa">${x}</div>`).join('');for(let i=0;i<first;i++)html+='<div></div>';for(let day=1;day<=count;day++){const key=extraDateKey(new Date(y,m,day)),n=records.filter(x=>extraDateKey(x._date)===key).length;html+=`<button class="extra-day ${n?'recorded':''}" data-extra-day="${key}">${day}${n?`<small style="display:block">${n}件</small>`:''}</button>`}document.getElementById('extraCalendar').innerHTML=html;document.querySelectorAll('[data-extra-day]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-extra-day]').forEach(z=>z.classList.remove('selected'));b.classList.add('selected');const rows=records.filter(x=>extraDateKey(x._date)===b.dataset.extraDay);document.getElementById('extraDayDetail').textContent=rows.length?`${b.dataset.extraDay}：${rows.length}回の測定、合計${rows.reduce((a,x)=>a+extraHours(x),0).toFixed(1)}時間、スコア ${rows.map(x=>x.score??'--').join(' / ')}`:`${b.dataset.extraDay}：記録なし`});const todayCount=records.filter(x=>extraDateKey(x._date)===extraDateKey(today)).length;const streak=typeof calculateStreak==='function'?calculateStreak():0;document.getElementById('extraMissions').innerHTML=[['今日の測定を1回記録',todayCount>=1,`${todayCount}/1回`],['今日の測定を2回記録',todayCount>=2,`${Math.min(todayCount,2)}/2回`],['3日連続で記録',streak>=3,`${streak}/3日`]].map(([label,done,progress])=>`<div class="analysis-item"><strong>${done?'✓ ':'○ '}${label}</strong><div class="muted">${progress} ・ ${done?'達成':'進行中'}</div></div>`).join('')}
+document.getElementById('extraPrevMonth').onclick=()=>{extraMonth.setMonth(extraMonth.getMonth()-1);extraRender()};document.getElementById('extraNextMonth').onclick=()=>{extraMonth.setMonth(extraMonth.getMonth()+1);extraRender()};
+function extraSettingKey(){return 'nsnl-extra-'+(currentUser?.uid||'guest')}
+function extraLoadSettings(){let x={};try{x=JSON.parse(localStorage.getItem(extraSettingKey())||'{}')}catch(e){}document.getElementById('extraTheme').value=x.theme||'default';document.getElementById('extraReminder').value=x.time||'22:00';document.getElementById('extraReminderEnabled').checked=!!x.enabled;extraApplySettings()}
+function extraApplySettings(){const theme=document.getElementById('extraTheme').value;document.body.classList.remove('extra-theme-blue','extra-theme-purple','extra-theme-green');if(theme!=='default')document.body.classList.add('extra-theme-'+theme);const enabled=document.getElementById('extraReminderEnabled').checked,time=document.getElementById('extraReminder').value;document.getElementById('extraReminderStatus').textContent=enabled?`毎日 ${time} にページ内でお知らせします（ページ表示中のみ）。`:'リマインダーはオフです。'}
+for(const id of ['extraTheme','extraReminder','extraReminderEnabled'])document.getElementById(id).addEventListener('change',()=>{localStorage.setItem(extraSettingKey(),JSON.stringify({theme:document.getElementById('extraTheme').value,time:document.getElementById('extraReminder').value,enabled:document.getElementById('extraReminderEnabled').checked}));extraApplySettings()});
+let extraLastNotice='';setInterval(()=>{const enabled=document.getElementById('extraReminderEnabled').checked;if(!enabled)return;const now=new Date(),hhmm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),key=extraDateKey(now)+' '+hhmm;if(hhmm===document.getElementById('extraReminder').value&&extraLastNotice!==key){extraLastNotice=key;document.getElementById('extraReminderStatus').textContent='そろそろ就寝予定時刻です。睡眠の準備をしましょう。'}},30000);
+const extraOldShowPage=showPage;showPage=function(name){extraOldShowPage(name);if(name==='insights'||name==='missions')extraRender();if(name==='extras')extraLoadSettings()};
 
 /* =========================
    INIT
