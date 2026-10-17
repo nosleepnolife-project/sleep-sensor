@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#111">
-<title>No Sleep No Life 管理者ページ v30</title>
+<title>No Sleep No Life 管理者ページ v38</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#111;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -81,7 +81,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid #8297e8;outline-offset
 </style>
 </head>
 <body>
-<header><h1>No Sleep No Life 管理者ページ v30</h1><div class="row"><span id="adminEmail" class="muted"></span><button id="logoutBtn" class="btn secondary small hidden">ログアウト</button></div></header>
+<header><h1>No Sleep No Life 管理者ページ v38</h1><div class="row"><span id="adminEmail" class="muted"></span><button id="logoutBtn" class="btn secondary small hidden">ログアウト</button></div></header>
 <section id="login" class="card"><h2>管理者ログイン</h2><p class="muted">登録された管理者Googleアカウントでログインしてください。</p><button id="loginBtn" class="btn">Googleでログイン</button><div id="loginMsg" class="notice hidden"></div></section>
 <main id="app" class="container hidden">
 <aside id="adminSidebar" class="admin-sidebar"><div class="sidebar-brand"><span class="brand-mark">NS</span><div><strong>No Sleep No Life</strong><small>ADMIN CONSOLE</small></div></div><div class="sidebar-label">MENU</div><button class="nav-item active" data-target="dashboardSection"><span>▦</span> ダッシュボード</button><button class="nav-item" data-target="analyticsSection"><span>▥</span> 利用状況分析</button><button class="nav-item" data-target="accessSection"><span>☷</span> 全アカウント一覧</button><button class="nav-item" data-target="userSearchSection"><span>⌕</span> ユーザー検索</button><button class="nav-item" data-target="rankingSection"><span>↗</span> ランキング</button><button class="nav-item" data-target="friendRequestsSection"><span>⇄</span> フレンド申請</button><div class="sidebar-label">MANAGEMENT</div><button class="nav-item" data-target="announcementsSection"><span>▤</span> お知らせ管理</button><button class="nav-item" data-target="titlesSection"><span>✦</span> 二つ名管理</button><button class="nav-item" data-target="resetSection"><span>⚙</span> データ管理</button><div class="sidebar-foot">No Sleep No Life<br><small>管理者専用ページ</small></div></aside>
@@ -120,6 +120,30 @@ import {getFirestore,collection,getDocs,getDoc,doc,setDoc,addDoc,updateDoc,delet
 const firebaseConfig={apiKey:"AIzaSyBhfOVk4K5Ybjji16b1ZKRqXd1UJGypH9Y",authDomain:"sleep-sensor-af01f.firebaseapp.com",projectId:"sleep-sensor-af01f",storageBucket:"sleep-sensor-af01f.firebasestorage.app",messagingSenderId:"86707291255",appId:"1:86707291255:web:01e2e67fa63c3513503272"};
 const ADMIN_EMAIL="kawamata.sousuke@ryugasaki1-h.ibk.ed.jp";const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);const provider=new GoogleAuthProvider();const $=id=>document.getElementById(id);
 let cachedUsers=[],cachedGrants=new Map(),cachedProfiles=new Map(),cachedRankingUsers=new Map();
+// v38: 利用者側v45と同じ二つ名ID→日本語表示名の解決
+const achievementTitleNames={'first':'眠りの','seven':'探究者','score90':'黄金の','improve10':'改革者','thirty':'継続する','score100':'伝説','improve20':'飛躍する','level5':'睡眠王'};
+let cachedTitleParts=new Map();
+async function refreshTitlePartNames(){
+ try{const snap=await getDocs(collection(db,"titleParts"));cachedTitleParts=new Map(snap.docs.map(d=>[String(d.id),d.data()]));}
+ catch(e){console.warn("二つ名マスター取得失敗",e);}
+}
+function resolveTitlePart(id){
+ if(!id)return "";
+ const key=String(id),part=cachedTitleParts.get(key);
+ if(part)return String(part.name||part.text||part.title||part.value||"");
+ if(key.startsWith("achievement_"))return achievementTitleNames[key.slice(12)]||"";
+ // すでに日本語名が保存されている旧形式はそのまま表示する
+ return /[ぁ-んァ-ヶ一-龠]/.test(key)?key:"";
+}
+function resolveEquippedTitle(user,profile){
+ const prefix=user.equippedTitlePrefix||profile.equippedTitlePrefix||"";
+ const suffix=user.equippedTitleSuffix||profile.equippedTitleSuffix||"";
+ const result=resolveTitlePart(prefix)+resolveTitlePart(suffix);
+ if(result)return result;
+ const saved=user.titleText||profile.titleText||"";
+ return saved&&!/achievement_[a-z0-9_]+/i.test(saved)&&/[ぁ-んァ-ヶ一-龠]/.test(saved)?saved:"";
+}
+
 function isAdmin(user){return !!user&&(user.email||"").toLowerCase()===ADMIN_EMAIL.toLowerCase()}
 function showLoginMessage(text,type=""){const e=$("loginMsg");e.textContent=text;e.className="notice"+(type?" "+type:"");e.classList.remove("hidden")}
 function msg(text,type=""){const e=$("message");e.textContent=text;e.className="notice"+(type?" "+type:"");e.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
@@ -133,7 +157,7 @@ function rankingName(r){const uid=r.uid||r.userId||r.id;const u=cachedRankingUse
 $("loginBtn").addEventListener("click",async()=>{const btn=$("loginBtn");btn.disabled=true;showLoginMessage("Googleログイン中...");try{const result=await signInWithPopup(auth,provider);if(!isAdmin(result.user)){await signOut(auth);showLoginMessage("このGoogleアカウントには管理者権限がありません。","error");return}showLoginMessage("ログインしました。","success")}catch(e){console.error("管理者ログインエラー:",e);showLoginMessage("ログインに失敗しました："+(e.code||"unknown")+" / "+(e.message||e),"error")}finally{btn.disabled=false}});
 $("logoutBtn").addEventListener("click",()=>signOut(auth));
 onAuthStateChanged(auth,async user=>{if(!user){$("login").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");$("adminEmail").textContent="";return}if(!isAdmin(user)){await signOut(auth);return}$("login").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("adminEmail").textContent=user.email||"";await loadAll()});
-async function loadAll(){clearMsg();await Promise.allSettled([loadDashboard(),loadTitles(),loadAnnouncements(),loadRanking(),loadFriendRequests(),loadAccessUsers()])}
+async function loadAll(){clearMsg();await refreshTitlePartNames();await Promise.allSettled([loadDashboard(),loadTitles(),loadAnnouncements(),loadRanking(),loadFriendRequests(),loadAccessUsers()])}
 $("reloadDashboard").onclick=loadAll;
 async function loadDashboard(){
  try{
@@ -267,7 +291,8 @@ async function showUserDetail(uid){
   const name=userName(uid,{...u,...pub}),status=accessStatus(grant),measurements=measureSnap.docs.map(d=>({id:d.id,...d.data()}));
   measurements.sort((a,b)=>(toDate(b.createdAt)||toDate(b.timestamp)||new Date(0))-(toDate(a.createdAt)||toDate(a.timestamp)||new Date(0)));
   const fmtNum=v=>typeof v==="number"&&Number.isFinite(v)?v.toLocaleString("ja-JP"):"-";
-  const title=[u.equippedTitlePrefix||"",u.equippedTitleSuffix||""].filter(Boolean).join("");
+  await refreshTitlePartNames();
+  const title=resolveEquippedTitle(u,pub);
   const history=measurements.slice(0,20).map(m=>`<div class="item"><strong>${esc(dateText(m.createdAt||m.timestamp))}</strong><div class="muted">スコア: ${esc(fmtNum(m.score))}　改善率: ${esc(typeof m.improvementRate==="number"?m.improvementRate.toFixed(1)+"%":"-")}</div><div class="muted">音イベント: ${esc(fmtNum(m.soundEvents??m.audioEvents??m.eventCount))}</div><div class="muted">記録ID: ${esc(m.id)}</div></div>`).join("");
   const achievementList=Array.isArray(u.achievements)?u.achievements.map(a=>typeof a==="string"?a:(a.name||a.id||JSON.stringify(a))).join("、"):"-";
   content.innerHTML=`<div class="detail-grid">
