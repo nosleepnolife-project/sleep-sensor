@@ -2143,6 +2143,14 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
   </section>
 
 
+  <section class="card" id="profileAccountCard">
+    <h2>Googleアカウント</h2>
+    <div id="profileAccountStatus" class="notice" aria-live="polite">ログイン状態を確認しています…</div>
+    <button id="profileGoogleLoginBtn" type="button" class="page-button" style="display:none">Googleでログイン</button>
+    <button id="profileGoogleLogoutBtn" type="button" class="secondary page-button" style="display:none">ログアウト</button>
+  </section>
+
+
   <section
     class="card"
     id="profileEditCard"
@@ -4217,6 +4225,18 @@ function refreshTopAccount(){
   document.getElementById("topAvatar").textContent=data.profileAvatar||"🌙";
  }
 }
+function refreshProfileAccount(){
+ const user=auth.currentUser;
+ const status=document.getElementById("profileAccountStatus");
+ const login=document.getElementById("profileGoogleLoginBtn");
+ const logout=document.getElementById("profileGoogleLogoutBtn");
+ if(!status||!login||!logout)return;
+ status.textContent=user?(user.email||user.displayName||"Googleアカウントでログイン中"):"現在ログインしていません";
+ login.style.display=user?"none":"block";
+ logout.style.display=user?"block":"none";
+}
+document.getElementById("profileGoogleLoginBtn").addEventListener("click",()=>document.getElementById("googleLoginBtn").click());
+document.getElementById("profileGoogleLogoutBtn").addEventListener("click",()=>document.getElementById("logoutBtn").click());
 document.getElementById("topLoginBtn").addEventListener("click",()=>document.getElementById("googleLoginBtn").click());
 document.getElementById("topProfileBtn").addEventListener("click",()=>showPage("profile"));
 
@@ -4227,6 +4247,7 @@ onAuthStateChanged(
 
     currentUser=user;
     refreshTopAccount();
+    refreshProfileAccount();
 
     // ローカル保存領域をアカウントごとに切り替え、別アカウントの記録を混ぜない。
     resetDataState();
