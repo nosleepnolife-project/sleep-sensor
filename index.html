@@ -1124,6 +1124,10 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 .sleep-curtain.blackout .sleep-curtain-stop{opacity:0}
 .sleep-curtain.blackout:active .sleep-curtain-stop,.sleep-curtain.blackout .sleep-curtain-stop:focus{opacity:1}
 @media(prefers-reduced-motion:reduce){.sleep-curtain-title{animation:none;opacity:.7}}
+/* お問い合わせページ */
+.contact-link{display:block;width:100%;padding:15px 16px;margin-top:16px;background:#fff;color:#111;text-decoration:none;text-align:center;font-weight:800;border-radius:10px}
+.contact-link:hover{opacity:.88}
+.contact-link:focus-visible{outline:3px solid #8fa6ff;outline-offset:3px}
 </style>
 </head>
 
@@ -1205,6 +1209,7 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 <button class="menu-item" data-page="insights"><span class="menu-icon">▥</span><span>分析・カレンダー</span></button>
 <button class="menu-item" data-page="missions"><span class="menu-icon">✓</span><span>デイリーミッション</span></button>
 <button class="menu-item" data-page="extras"><span class="menu-icon">◷</span><span>通知・カスタマイズ</span></button>
+<button class="menu-item" data-page="contact"><span class="menu-icon">✉</span><span>お問い合わせ</span></button>
   </nav>
 </aside>
 
@@ -2515,6 +2520,18 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 
 
 
+
+<!-- お問い合わせ -->
+<div id="page-contact" class="page">
+  <h1 class="page-title">お問い合わせ</h1>
+  <p class="page-description">No Sleep No Lifeへのご質問・不具合報告・ご意見はこちらからお送りください。</p>
+  <section class="card">
+    <h2>お問い合わせフォーム</h2>
+    <p class="notice">下のボタンを押すとGoogleフォームが新しいタブで開きます。送信後はこのアプリに戻れます。</p>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSecviFlZkHrM6g-TME84WWGgNa3wSahcvjIosLZSiROOdPo6w/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="contact-link">お問い合わせフォームを開く ↗</a>
+    <p class="setting-description" style="margin-top:16px">個人情報やパスワードなどの機密情報は入力しないでください。</p>
+  </section>
+</div>
 
 <!-- =========================
      SETTINGS
