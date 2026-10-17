@@ -3046,8 +3046,43 @@ function updateAccessUI(){
   const start=document.getElementById("startBtn");
   if(start&&!measuring)start.disabled=!hasAccess();
 }
-async function ensureAccessGrant(){accessChecked=false;accessGrant=null;updateAccessUI();if(!currentUser)return;const admin=isAdminUser();const ref=doc(db,'accessGrants',currentUser.uid);try{let snap=await getDoc(ref);if(!snap.exists()&&!admin){const now=Date.now();try{await setDoc(ref,{uid:currentUser.uid,unlimited:false,createdAt:serverTimestamp(),expiresAt:Timestamp.fromMillis(now+ACCESS_DAYS*86400000)});}catch(e){console.warn('Trial creation:',e);}snap=await getDoc(ref);}accessGrant=snap.exists()?snap.data():null;}catch(e){console.error('Access check failed:',e);}finally{accessChecked=true;updateAccessUI();}}
-
+async function ensureAccessGrant(){
+  accessChecked=false;
+  accessGrant=null;
+  updateAccessUI();
+  if(!currentUser)return;
+  const user=currentUser;
+  const ref=doc(db,"accessGrants",user.uid);
+  try{
+    // トランザクションにより初回ログイン時だけ付与。既存の期限は絶対に上書きしない。
+    if(!isAdminUser()){
+      await runTransaction(db,async tx=>{
+        const existing=await tx.get(ref);
+        if(existing.exists())return;
+        const now=Date.now();
+        tx.set(ref,{
+          uid:user.uid,
+          unlimited:false,
+          createdAt:Timestamp.fromMillis(now),
+          expiresAt:Timestamp.fromMillis(now+ACCESS_DAYS*86400000),
+          updatedAt:serverTimestamp(),
+          createdBy:user.uid,
+          grantType:"initial_7_days"
+        });
+      });
+    }
+    const snap=await getDoc(ref);
+    if(currentUser?.uid!==user.uid)return;
+    accessGrant=snap.exists()?snap.data():null;
+    if(!accessGrant&&!isAdminUser())console.error("利用期限が見つかりません。Firestoreルールを確認してください。");
+  }catch(e){
+    console.error("利用期限の自動付与・取得に失敗しました:",e);
+    if(currentUser?.uid!==user.uid)return;
+    try{const snap=await getDoc(ref);accessGrant=snap.exists()?snap.data():null;}catch(readError){console.error("利用期限の再取得に失敗:",readError);}
+  }finally{
+    if(currentUser?.uid===user.uid){accessChecked=true;updateAccessUI();}
+  }
+}
 
 
 let sleepLastBigMove=0;
