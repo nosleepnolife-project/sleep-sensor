@@ -1553,6 +1553,7 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
     </div>
 
 
+    <p class="notice">15分以下の測定は保存されません。15分を超えてから終了すると記録されます。</p>
     <button id="startBtn">
       睡眠測定開始
     </button>
@@ -6901,6 +6902,14 @@ function stopMeasurement(){
   if(stopBtn) stopBtn.disabled=true;
 
   const status=document.getElementById("measurementStatus");
+  // 15分以下の測定は保存・採点・XP付与・アンケート表示を行わない
+  const elapsedMs=Math.max(0,Date.now()-measurementStart);
+  if(elapsedMs<=15*60*1000){
+    if(status) status.textContent="15分以下の測定は保存できません。15分を超えてから終了してください。";
+    const resultCard=document.getElementById("resultCard");
+    if(resultCard) resultCard.style.display="none";
+    return;
+  }
   if(status) status.textContent="測定終了。結果を分析しています。";
   calculateResult();
 }
