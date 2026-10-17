@@ -3077,11 +3077,8 @@ async function ensureAccessGrant(){
         tx.set(ref,{
           uid:user.uid,
           unlimited:false,
-          createdAt:Timestamp.fromMillis(now),
-          expiresAt:Timestamp.fromMillis(now+ACCESS_DAYS*86400000),
-          updatedAt:serverTimestamp(),
-          createdBy:user.uid,
-          grantType:"initial_7_days"
+          createdAt:serverTimestamp(),
+          expiresAt:Timestamp.fromMillis(now+ACCESS_DAYS*86400000)
         });
       });
     }
