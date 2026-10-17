@@ -1128,6 +1128,12 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px))}
 .contact-link{display:block;width:100%;padding:15px 16px;margin-top:16px;background:#fff;color:#111;text-decoration:none;text-align:center;font-weight:800;border-radius:10px}
 .contact-link:hover{opacity:.88}
 .contact-link:focus-visible{outline:3px solid #8fa6ff;outline-offset:3px}
+
+/* v44: お知らせは表示上の5行を超えた場合のみ折りたたむ */
+.announcement-message{margin-top:7px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
+.announcement-message.is-collapsed{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;line-clamp:5;overflow:hidden}
+.announcement-toggle{display:none;margin:8px 0 0;padding:7px 12px;background:#303030;color:#fff;font-size:13px;border:1px solid #505050}
+.announcement-toggle.is-visible{display:inline-block}
 </style>
 </head>
 
@@ -10541,6 +10547,39 @@ document.addEventListener(
 ========================= */
 
 
+function updateAnnouncementOverflow(){
+  const area=document.getElementById("announcementArea");
+  if(!area)return;
+  area.querySelectorAll(".announcement-message").forEach(message=>{
+    const button=message.nextElementSibling;
+    if(!button||!button.classList.contains("announcement-toggle"))return;
+    const expanded=!message.classList.contains("is-collapsed");
+    // 折りたたみ時の高さを測り、5行以内ならボタンを隠す。
+    message.classList.add("is-collapsed");
+    const overflow=message.scrollHeight>message.clientHeight+2;
+    if(expanded)message.classList.remove("is-collapsed");
+    button.classList.toggle("is-visible",overflow);
+    button.hidden=!overflow;
+    if(!overflow){
+      message.classList.add("is-collapsed");
+      button.textContent="続きを読む";
+      button.setAttribute("aria-expanded","false");
+    }
+  });
+}
+
+document.getElementById("announcementArea")?.addEventListener("click",event=>{
+  const button=event.target.closest(".announcement-toggle");
+  if(!button)return;
+  const message=button.previousElementSibling;
+  if(!message)return;
+  const expanding=message.classList.contains("is-collapsed");
+  message.classList.toggle("is-collapsed",!expanding);
+  button.textContent=expanding?"閉じる":"続きを読む";
+  button.setAttribute("aria-expanded",String(expanding));
+});
+window.addEventListener("resize",updateAnnouncementOverflow);
+
 async function loadAnnouncements(){
 
 
@@ -10848,14 +10887,8 @@ async function loadAnnouncements(){
           </div>
 
 
-          <div style="
-            margin-top:7px;
-            color:${announcement.important?"#ddd":"#bbb"};
-            white-space:pre-wrap;
-            line-height:1.7;
-          ">
-            ${message}
-          </div>
+          <div class="announcement-message is-collapsed" style="color:${announcement.important?"#ddd":"#bbb"};">${message}</div>
+          <button type="button" class="announcement-toggle" aria-expanded="false">続きを読む</button>
 
 
         </div>
@@ -10863,6 +10896,8 @@ async function loadAnnouncements(){
 
 
     }).join("");
+
+    updateAnnouncementOverflow();
 
 
   }catch(e){
